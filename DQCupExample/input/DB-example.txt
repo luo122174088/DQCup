@@ -1,0 +1,10 @@
+RUID:SSN:FNAME:MINIT:LNAME:STNUM:STADD:APMT:CITY:STATE:ZIP
+0:647025325:Mcneal:X:Aparisi:314:Probsthain Ave:5t0:Cumberland:RI:02864
+1:647025325:Mcneal:X:Aparisi:314:Probsthain Ave:5t0:Cumberland:RI:02864
+2:440141608:Geni:S:Quinteros:721:Valera Ave:3y7:Coos Bay:OR:971420
+3:440141608:Geni:S:Quinteros:721:Valera Ave:3y7:Coos Bay:OR:97420
+4:440141608:Geni:S:Quinteros:721:Valera Ave:3y7:Coos Bay:OR:97420
+5:630657414:Modrell:T:Kangas:896:Berthon Road:6v0:Crossroads:NM:88114
+6:630657414:Modrell:T:Kangas:896:Berthon Road:6v0:Crossroads:NM:8A114
+7:630657414:Modrell:T:Kangas:896:Berthon Road:6v0:Crossroads:NM:88114
+8:630657414:Modrell:T:Kangas:896:Berthon Road:6v0:Crossroads:NM:88114
