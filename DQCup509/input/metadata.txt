@@ -1,13 +1,13 @@
 RUID:主键,全局唯一标识
 CUID:标识不同的人,CUID相同者为同一人
 SSN:社保号码,9位纯数字,全为0代表无社保卡(无工作),不全为0时是全局唯一的(任何两人社保号不同)
-FNAME:First name,全字母,首字母大写
+FNAME:First name,可能包含字母,逗号及句号,首字母大写
 MINIT:中间名缩写,可为空,或为1位大写字母
-LNAME:Last name,全字母,首字母大写
+LNAME:Last name,可能包含字母,逗号及句号,首字母大写
 STNUM:街道编号,1-3位纯数字.STADD属性为“PO BOX xxxx”时该属性为空
-STADD:街道名,可以是字母+空格,或者为“PO BOX xx”,其中"xx"为纯数字.若为“PO BOX xx”,则STNUM和APMT属性皆为空
+STADD:街道名,可能包含字母,空格,逗号及句号,或者为“PO BOX xx”,其中"xx"为纯数字.若为“PO BOX xx”,则STNUM和APMT属性皆为空
 APMT:公寓房号,3位,第1位和第3位为数字,第2位为小写字母.STADD属性为“PO BOX xxxx”时该属性为空
-CITY:城市名,纯字母,首字母大写
+CITY:城市名,可能包含字母+五种标点符号'-/. (空格也算一种),首字母大写,标点符号后紧邻的字母也要大写
 STATE:所在州缩写,为美国的50个州的简称
 ZIP:邮政编码,五位纯数字
 BIRTH:出生月日年,年份范围从1930到1989
