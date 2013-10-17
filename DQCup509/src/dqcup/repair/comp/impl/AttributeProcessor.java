@@ -107,6 +107,7 @@ public class AttributeProcessor implements DQCupProcessor {
 		if (!birthAgeValidator.validate(birth, age)) {
 			invalidAttrs.set(DQTuple.BIRTH_INDEX);
 			invalidAttrs.set(DQTuple.AGE_INDEX);
+			valid = false;
 			logger.error("Ruid:{} \t Invalid {}:{}\t{}:{}", ruid, DQTuple.BIRTH, birth,
 					DQTuple.AGE, age);
 		}
@@ -118,6 +119,7 @@ public class AttributeProcessor implements DQCupProcessor {
 			invalidAttrs.set(DQTuple.STADD_INDEX);
 			invalidAttrs.set(DQTuple.STNUM_INDEX);
 			invalidAttrs.set(DQTuple.APMT_INDEX);
+			valid = false;
 			logger.error("Ruid:{} \t Invalid {}:{}\t{}:{}\t{}:{}", ruid, DQTuple.STADD, stAdd,
 					DQTuple.STNUM, stNum, DQTuple.APMT, apmt);
 		}
@@ -129,10 +131,10 @@ public class AttributeProcessor implements DQCupProcessor {
 			invalidAttrs.set(DQTuple.SSN_INDEX);
 			invalidAttrs.set(DQTuple.SALARY_INDEX);
 			invalidAttrs.set(DQTuple.TAX_INDEX);
+			valid = false;
 			logger.error("Ruid:{} \t Invalid {}:{}\t{}:{}\t{}:{}", ruid, DQTuple.SSN, ssn,
 					DQTuple.SALARY, salary, DQTuple.TAX, tax);
 		}
-
 		if (!valid) {
 			invalidTuples.add(tuple);
 			this.invalidAttrs.add(invalidAttrs);
@@ -176,8 +178,10 @@ public class AttributeProcessor implements DQCupProcessor {
 			Tuple tuple = tupleIt.next();
 			BitSet invalidAttr = attrIt.next();
 			String cuid = tuple.getCells().get(DQTuple.CUID);
-
 			List<DQTuple> dqList = dqTuples.get(cuid);
+			if (cuid.equals("28176")) {
+				System.out.println();
+			}
 			if (dqList == null) {
 				// no correct tuple with same cuid
 				dqList = new LinkedList<DQTuple>();

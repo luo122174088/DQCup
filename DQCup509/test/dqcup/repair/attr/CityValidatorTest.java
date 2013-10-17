@@ -15,6 +15,9 @@ public class CityValidatorTest {
 		assertTrue(repair.valid("Luo Chen"));
 		assertFalse(repair.valid("Luo 1Chen"));
 		assertFalse(repair.valid("luo Chen"));
+		assertTrue(repair.valid("Luo Chen"));
+		assertFalse(repair.valid("LUo Chen"));
+		assertFalse(repair.valid("Luo chen"));
 
 	}
 

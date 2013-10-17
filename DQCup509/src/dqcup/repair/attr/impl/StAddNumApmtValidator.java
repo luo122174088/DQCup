@@ -7,11 +7,10 @@ package dqcup.repair.attr.impl;
  */
 public class StAddNumApmtValidator {
 
-	private static final String POBox_Prefix = "po box";
+	private static final String POBox_Prefix = "PO Box";
 
 	public boolean validate(String stAdd, String stNum, String apmt) {
 		try {
-			stAdd = stAdd.toLowerCase();
 			if (stAdd.startsWith(POBox_Prefix)) {
 				// PO BOX xxxx
 				String[] addrs = stAdd.split("\\s");

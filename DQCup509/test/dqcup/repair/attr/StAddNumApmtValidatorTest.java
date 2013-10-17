@@ -18,6 +18,7 @@ public class StAddNumApmtValidatorTest {
 		assertFalse(validator.validate("PO Box 123a", "", ""));
 		assertFalse(validator.validate("San Juan", "a", "4c8"));
 		assertFalse(validator.validate("San Juan", "1", "448"));
+		assertFalse(validator.validate("PO BOX 123", "", ""));
 
 	}
 
