@@ -2,7 +2,6 @@ package dqcup.repair.comp.impl;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.BitSet;
@@ -21,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import dqcup.repair.ColumnNames;
 import dqcup.repair.RepairedCell;
-import dqcup.repair.Tuple;
 import dqcup.repair.attr.AttributeValidator;
 import dqcup.repair.attr.impl.BirthAgeValidator;
 import dqcup.repair.attr.impl.CityValidator;
@@ -197,6 +195,7 @@ public class AttributeProcessor implements DQCupProcessor {
 			String[] tuple = tupleIt.next();
 			BitSet invalidAttr = attrIt.next();
 			String cuid = tuple[1];
+	
 			List<DQTuple> dqList = dqTuples.get(cuid);
 			if (dqList == null) {
 				// no correct tuple with same cuid
@@ -232,9 +231,41 @@ public class AttributeProcessor implements DQCupProcessor {
 					DQTuple dq = new DQTuple(tuple);
 					dq.setInvalidAttrs(invalidAttr);
 					invalidDqTuples.add(dq);
+					dqList.add(dq);
 				}
 			}
-
+		}
+		// TODO: This is just an experiment
+		for (Entry<String, List<DQTuple>> entry : dqTuples.entrySet()) {
+			List<DQTuple> tuples = entry.getValue();
+			if (tuples.size() > 1) {
+				DQTuple majority = tuples.get(0);
+				if (majority.getCuid().equals("28176")) {
+					System.out.println();
+				}
+				for (int i = 1; i < tuples.size(); i++) {
+					if (majority.getRuids().size() < tuples.get(i).getRuids().size()) {
+						majority = tuples.get(i);
+					}
+				}
+				for (int i = 0; i < tuples.size(); i++) {
+					DQTuple tuple = tuples.get(i);
+					if (tuple != majority) {
+						// repair
+						for (int j = 0; j < DQTuple.AttrCount; j++) {
+							if (!tuple.getData(j).equals(majority.getData(j))) {
+								for (int ruid : tuple.getRuids()) {
+									repairs.add(new RepairedCell(ruid, DQTuple.Attrs[j], majority
+											.getData(j)));
+									majority.getRuids().add(ruid);
+								}
+							}
+						}
+					}
+				}
+				tuples.clear();
+				tuples.add(majority);
+			}
 		}
 	}
 }
