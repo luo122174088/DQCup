@@ -11,9 +11,9 @@ public class DQCupChain {
 	private LinkedList<DQCupProcessor> procs = null;
 	private DQCupContext context = null;
 
-	public DQCupChain(LinkedList<Tuple> tuples, HashSet<RepairedCell> repairs) {
+	public DQCupChain(String filePath, HashSet<RepairedCell> repairs) {
 		procs = new LinkedList<DQCupProcessor>();
-		context = new DQCupContext(tuples, repairs);
+		context = new DQCupContext(filePath, repairs);
 	}
 
 	public void add(DQCupProcessor proc) {

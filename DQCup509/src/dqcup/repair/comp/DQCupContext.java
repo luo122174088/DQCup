@@ -2,31 +2,29 @@ package dqcup.repair.comp;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 
 import dqcup.repair.RepairedCell;
-import dqcup.repair.Tuple;
 
 public class DQCupContext {
-	private LinkedList<Tuple> tuples;
+	private String filePath;
 
 	private HashSet<RepairedCell> repairs;
 
 	private Map<String, Object> map; // used for communicating among processors
 
-	public DQCupContext(LinkedList<Tuple> tuples, HashSet<RepairedCell> repairs) {
-		this.tuples = tuples;
+	public DQCupContext(String filePath, HashSet<RepairedCell> repairs) {
+		this.filePath = filePath;
 		this.repairs = repairs;
 		this.map = new HashMap<String, Object>();
 	}
 
-	public LinkedList<Tuple> getTuples() {
-		return tuples;
+	public String getFilePath() {
+		return filePath;
 	}
 
-	public void setTuples(LinkedList<Tuple> tuples) {
-		this.tuples = tuples;
+	public void setFilePath(String filePath) {
+		this.filePath = filePath;
 	}
 
 	public HashSet<RepairedCell> getRepairs() {

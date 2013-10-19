@@ -28,14 +28,13 @@ public class DQTuple {
 		ruids = new HashSet<Integer>();
 	}
 
-	public DQTuple(Tuple tuple) {
+	public DQTuple(String[] tuple) {
 		ruids = new HashSet<Integer>();
-		HashMap<String, String> cell = tuple.getCells();
-		ruids.add(Integer.valueOf(cell.get(RUID)));
-		cuid = cell.get(CUID);
+		ruids.add(Integer.valueOf(tuple[0]));
+		cuid = tuple[1];
 
 		for (int i = 0; i < AttrCount; i++) {
-			data[i] = cell.get(Attrs[i]);
+			data[i] = tuple[i + Offset];
 		}
 	}
 
@@ -88,13 +87,12 @@ public class DQTuple {
 		return result;
 	}
 
-	public boolean equalsTuple(Tuple tuple) {
-		HashMap<String, String> cell = tuple.getCells();
-		if (!cuid.equals(cell.get(CUID))) {
+	public boolean equalsTuple(String[] tuple) {
+		if (!cuid.equals(tuple[1])) {
 			return false;
 		}
 		for (int i = 0; i < AttrCount; i++) {
-			if (!data[i].equals(cell.get(Attrs[i]))) {
+			if (!data[i].equals(tuple[i + Offset])) {
 				return false;
 			}
 		}
@@ -108,12 +106,12 @@ public class DQTuple {
 	 * @param invalidAttrs
 	 * @return
 	 */
-	public boolean partialEquals(DQTuple tuple, BitSet invalidAttrs) {
-		if (!cuid.equals(tuple.cuid)) {
+	public boolean partialEquals(String[] tuple, BitSet invalidAttrs) {
+		if (!cuid.equals(tuple[1])) {
 			return false;
 		}
 		for (int i = 0; i < AttrCount; i++) {
-			if (!invalidAttrs.get(i) && !data[i].equals(tuple.data[i])) {
+			if (!invalidAttrs.get(i) && !data[i].equals(tuple[i + Offset])) {
 				return false;
 			}
 		}
@@ -181,7 +179,7 @@ public class DQTuple {
 
 	public static final int SSN_INDEX = 0;
 	public static final int FNAME_INDEX = 1;
-	public static final int MININT_INDEX = 2;
+	public static final int MINIT_INDEX = 2;
 	public static final int LNAME_INDEX = 3;
 	public static final int STNUM_INDEX = 4;
 	public static final int STADD_INDEX = 5;
@@ -195,6 +193,8 @@ public class DQTuple {
 	public static final int TAX_INDEX = 13;
 
 	public static final int AttrCount = 14;
+
+	public static final int Offset = 2;
 	public static final Map<String, Integer> AttrIndex = new HashMap<String, Integer>();
 	public static final String[] Attrs = { SSN, FNAME, MINIT, LNAME, STNUM, STADD, APMT, CITY,
 			STATE, ZIP, BIRTH, AGE, SALARY, TAX };

@@ -1,5 +1,10 @@
 package dqcup.repair.comp.impl;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +19,7 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dqcup.repair.ColumnNames;
 import dqcup.repair.RepairedCell;
 import dqcup.repair.Tuple;
 import dqcup.repair.attr.AttributeValidator;
@@ -33,23 +39,23 @@ public class AttributeProcessor implements DQCupProcessor {
 
 	private static Logger logger = LoggerFactory.getLogger(AttributeProcessor.class);
 
-	private static Map<String, AttributeValidator> attrValidators;
+	private static Map<Integer, AttributeValidator> attrValidators;
 	private static BirthAgeValidator birthAgeValidator = new BirthAgeValidator();
 	private static SSNSalaryTaxValidator ssnSalaryTaxValidator = new SSNSalaryTaxValidator();
 	private static StAddNumApmtValidator stAddNumApmtValidator = new StAddNumApmtValidator();
-	static {
-		attrValidators = new HashMap<String, AttributeValidator>();
-		attrValidators.put(DQTuple.FNAME, new FNameValidator());
-		attrValidators.put(DQTuple.MINIT, new MinitValidator());
-		attrValidators.put(DQTuple.LNAME, new FNameValidator());
-		attrValidators.put(DQTuple.CITY, new CityValidator());
-		attrValidators.put(DQTuple.STATE, new StateValidator());
-		attrValidators.put(DQTuple.ZIP, new ZipValidator());
-	}
 
-	private LinkedList<Tuple> origTuples;
+	static {
+		attrValidators = new HashMap<Integer, AttributeValidator>();
+		attrValidators.put(DQTuple.FNAME_INDEX, new FNameValidator());
+		attrValidators.put(DQTuple.MINIT_INDEX, new MinitValidator());
+		attrValidators.put(DQTuple.LNAME_INDEX, new FNameValidator());
+		attrValidators.put(DQTuple.CITY_INDEX, new CityValidator());
+		attrValidators.put(DQTuple.STATE_INDEX, new StateValidator());
+		attrValidators.put(DQTuple.ZIP_INDEX, new ZipValidator());
+	}
+	private ColumnNames columnNames;
 	private HashSet<RepairedCell> repairs;
-	private List<Tuple> invalidTuples;
+	private List<String[]> invalidTuples;
 	private List<BitSet> invalidAttrs;
 
 	/**
@@ -63,76 +69,88 @@ public class AttributeProcessor implements DQCupProcessor {
 	@Override
 	public void process(DQCupContext context) {
 		init(context);
-		for (Tuple tuple : origTuples) {
-			processTuple(tuple);
+		String path = context.getFilePath();
+		File file = new File(path);
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(file));
+			String line = null;
+			boolean columnNameLine = true;
+			while (null != (line = reader.readLine())) {
+				if (columnNameLine) {
+					columnNames = new ColumnNames(line);
+					columnNameLine = false;
+				} else {
+					String[] tuple = line.split(":");
+					processTuple(tuple);
+				}
+			}
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		repair();
 
 		context.set("dqTuples", dqTuples);
 		context.set("invalidDqTuples", invalidDqTuples);
-
+		context.set("columnNames", columnNames);
 	}
 
 	private void init(DQCupContext context) {
-		origTuples = context.getTuples();
 		repairs = context.getRepairs();
-
-		invalidTuples = new LinkedList<Tuple>();
+		invalidTuples = new LinkedList<String[]>();
 		invalidDqTuples = new LinkedList<DQTuple>();
 		invalidAttrs = new LinkedList<BitSet>();
 		dqTuples = new TreeMap<String, List<DQTuple>>();
 		prevList = null;
-
 	}
 
-	private void processTuple(Tuple tuple) {
-		HashMap<String, String> cell = tuple.getCells();
+	private void processTuple(String[] tuple) {
 		boolean valid = true;
 		BitSet invalidAttrs = new BitSet(DQTuple.AttrCount);
-		int ruid = Integer.valueOf(cell.get(DQTuple.RUID));
+		int ruid = Integer.valueOf(tuple[0]);
 		// validate the single attribute
-		for (Entry<String, AttributeValidator> entry : attrValidators.entrySet()) {
-			String column = entry.getKey();
-			AttributeValidator repair = entry.getValue();
-			String value = cell.get(column);
-			if (repair != null && !repair.valid(value)) {
-				invalidAttrs.set(DQTuple.AttrIndex.get(column));
+		for (Entry<Integer, AttributeValidator> entry : attrValidators.entrySet()) {
+			AttributeValidator validator = entry.getValue();
+			int index = entry.getKey() + DQTuple.Offset;
+			String value = tuple[index];
+			if (!validator.valid(value)) {
+				invalidAttrs.set(entry.getKey());
 				valid = false;
-				logger.error("Ruid:{}\tInvalid {}:{}", ruid, column, value);
+				logger.info("Ruid:{}\tInvalid {}:{}", ruid, DQTuple.Attrs[entry.getKey()], value);
 			}
 		}
 		// validate the compositional attributes
-		String birth = cell.get(DQTuple.BIRTH);
-		String age = cell.get(DQTuple.AGE);
+		String birth = tuple[DQTuple.BIRTH_INDEX + DQTuple.Offset];
+		String age = tuple[DQTuple.AGE_INDEX + DQTuple.Offset];
 		if (!birthAgeValidator.validate(birth, age)) {
 			invalidAttrs.set(DQTuple.BIRTH_INDEX);
 			invalidAttrs.set(DQTuple.AGE_INDEX);
 			valid = false;
-			logger.error("Ruid:{} \t Invalid {}:{}\t{}:{}", ruid, DQTuple.BIRTH, birth,
-					DQTuple.AGE, age);
+			logger.info("Ruid:{} \t Invalid {}:{}\t{}:{}", ruid, DQTuple.BIRTH, birth, DQTuple.AGE,
+					age);
 		}
 
-		String stAdd = cell.get(DQTuple.STADD);
-		String stNum = cell.get(DQTuple.STNUM);
-		String apmt = cell.get(DQTuple.APMT);
+		String stAdd = tuple[DQTuple.STADD_INDEX + DQTuple.Offset];
+		String stNum = tuple[DQTuple.STNUM_INDEX + DQTuple.Offset];
+		String apmt = tuple[DQTuple.APMT_INDEX + DQTuple.Offset];
 		if (!stAddNumApmtValidator.validate(stAdd, stNum, apmt)) {
 			invalidAttrs.set(DQTuple.STADD_INDEX);
 			invalidAttrs.set(DQTuple.STNUM_INDEX);
 			invalidAttrs.set(DQTuple.APMT_INDEX);
 			valid = false;
-			logger.error("Ruid:{} \t Invalid {}:{}\t{}:{}\t{}:{}", ruid, DQTuple.STADD, stAdd,
+			logger.info("Ruid:{} \t Invalid {}:{}\t{}:{}\t{}:{}", ruid, DQTuple.STADD, stAdd,
 					DQTuple.STNUM, stNum, DQTuple.APMT, apmt);
 		}
 
-		String ssn = cell.get(DQTuple.SSN);
-		String salary = cell.get(DQTuple.SALARY);
-		String tax = cell.get(DQTuple.TAX);
+		String ssn = tuple[DQTuple.SSN_INDEX + DQTuple.Offset];
+		String salary = tuple[DQTuple.SALARY_INDEX + DQTuple.Offset];
+		String tax = tuple[DQTuple.TAX_INDEX + DQTuple.Offset];
 		if (!ssnSalaryTaxValidator.validate(ssn, salary, tax)) {
 			invalidAttrs.set(DQTuple.SSN_INDEX);
 			invalidAttrs.set(DQTuple.SALARY_INDEX);
 			invalidAttrs.set(DQTuple.TAX_INDEX);
 			valid = false;
-			logger.error("Ruid:{} \t Invalid {}:{}\t{}:{}\t{}:{}", ruid, DQTuple.SSN, ssn,
+			logger.info("Ruid:{} \t Invalid {}:{}\t{}:{}\t{}:{}", ruid, DQTuple.SSN, ssn,
 					DQTuple.SALARY, salary, DQTuple.TAX, tax);
 		}
 		if (!valid) {
@@ -144,7 +162,7 @@ public class AttributeProcessor implements DQCupProcessor {
 				return;
 			}
 			DQTuple prevTuple = prevList.get(0);
-			if (!prevTuple.getCuid().equals(tuple.getCells().get(DQTuple.CUID))) {
+			if (!prevTuple.getCuid().equals(tuple[1])) {
 				addNewTuple(tuple);
 				return;
 			}
@@ -152,7 +170,7 @@ public class AttributeProcessor implements DQCupProcessor {
 			for (DQTuple dqTuple : prevList) {
 				if (dqTuple.equalsTuple(tuple)) {
 					// no conflict, just merge
-					dqTuple.getRuids().add(Integer.valueOf(cell.get(DQTuple.RUID)));
+					dqTuple.getRuids().add(Integer.valueOf(tuple[0]));
 					return;
 				}
 			}
@@ -161,7 +179,7 @@ public class AttributeProcessor implements DQCupProcessor {
 		}
 	}
 
-	private void addNewTuple(Tuple tuple) {
+	private void addNewTuple(String[] tuple) {
 		DQTuple dq = new DQTuple(tuple);
 		prevList = new LinkedList<DQTuple>();
 		prevList.add(dq);
@@ -172,16 +190,14 @@ public class AttributeProcessor implements DQCupProcessor {
 		if (invalidTuples.size() == 0) {
 			return;
 		}
-		Iterator<Tuple> tupleIt = invalidTuples.iterator();
+
+		Iterator<String[]> tupleIt = invalidTuples.iterator();
 		Iterator<BitSet> attrIt = invalidAttrs.iterator();
 		while (tupleIt.hasNext()) {
-			Tuple tuple = tupleIt.next();
+			String[] tuple = tupleIt.next();
 			BitSet invalidAttr = attrIt.next();
-			String cuid = tuple.getCells().get(DQTuple.CUID);
+			String cuid = tuple[1];
 			List<DQTuple> dqList = dqTuples.get(cuid);
-			if (cuid.equals("28176")) {
-				System.out.println();
-			}
 			if (dqList == null) {
 				// no correct tuple with same cuid
 				dqList = new LinkedList<DQTuple>();
@@ -197,11 +213,10 @@ public class AttributeProcessor implements DQCupProcessor {
 				for (DQTuple dq : dqList) {
 					if (dq.getInvalidAttrs() == null && dq.partialEquals(tuple, invalidAttr)) {
 						// we can correct the invalid tuple now
-						HashMap<String, String> cell = tuple.getCells();
-						int ruid = Integer.valueOf(cell.get(DQTuple.RUID));
+						int ruid = Integer.valueOf(tuple[0]);
 						for (int i = 0; i < DQTuple.AttrCount; i++) {
 							if (invalidAttr.get(i)
-									&& !dq.getData(i).equals(cell.get(DQTuple.Attrs[i]))) {
+									&& !dq.getData(i).equals(tuple[i + DQTuple.Offset])) {
 								// find an error
 								repairs.add(new RepairedCell(ruid, DQTuple.Attrs[i], dq.getData(i)));
 							}
