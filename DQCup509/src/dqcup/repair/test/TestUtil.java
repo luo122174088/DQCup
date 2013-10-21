@@ -49,14 +49,21 @@ public class TestUtil {
 	
 	public static double findAccuracy(Set<RepairedCell> truth, Set<RepairedCell> found){
 		if(found.size()!=0){
-			HashMap<Integer,String> truthMap = new HashMap<Integer,String>();
+			HashMap<Integer,HashSet<String>> truthMap = new HashMap<Integer,HashSet<String>>();
 			for(RepairedCell cell:truth){
-				truthMap.put(cell.getRowId(), cell.getColumnId());
+				HashSet<String> columnIds = null;
+				if(truthMap.get(cell.getRowId())==null){
+					columnIds = new HashSet<String>();
+				}else{
+					columnIds = truthMap.get(cell.getRowId());
+				}
+				columnIds.add(cell.getColumnId());
+				truthMap.put(cell.getRowId(), columnIds);
 			}
 			int tAndF = 0;
 			for(RepairedCell cell:found){
 				if(truthMap.get(cell.getRowId())!=null){
-					if(truthMap.get(cell.getRowId()).equals(cell.getColumnId())){
+					if(truthMap.get(cell.getRowId()).contains(cell.getColumnId())){
 						tAndF++;
 					}
 				}
