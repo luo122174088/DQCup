@@ -126,12 +126,11 @@ public class DQTuple {
 	 * @return
 	 */
 	public boolean partialEquals(Tuple tuple, BitSet invalidAttrs) {
-		HashMap<String, String> cell = tuple.getCells();
-		if (!cuid.equals(cell.get(CUID))) {
+		if (!cuid.equals(tuple.getValue(DQTuple.CUID))) {
 			return false;
 		}
 		for (int i = 0; i < AttrCount; i++) {
-			if (!invalidAttrs.get(i) && !data[i].equals(cell.get(Attrs[i]))) {
+			if (!invalidAttrs.get(i) && !data[i].equals(tuple.getValue(i + Offset))) {
 				return false;
 			}
 		}
