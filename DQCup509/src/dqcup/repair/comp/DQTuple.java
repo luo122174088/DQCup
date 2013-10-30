@@ -1,5 +1,6 @@
 package dqcup.repair.comp;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,12 +31,7 @@ public class DQTuple {
 
 	public DQTuple(String[] tuple) {
 		ruids = new HashSet<Integer>();
-		ruids.add(Integer.valueOf(tuple[0]));
-		cuid = tuple[1];
-
-		for (int i = 0; i < AttrCount; i++) {
-			data[i] = tuple[i + Offset];
-		}
+		setDatas(tuple);
 	}
 
 	public String getCuid() {
@@ -61,6 +57,16 @@ public class DQTuple {
 	public void setData(String name, String value) {
 		int index = AttrIndex.get(name);
 		data[index] = value;
+	}
+
+	public void setDatas(String[] tuple) {
+		ruids.clear();
+		ruids.add(Integer.valueOf(tuple[0]));
+		cuid = tuple[1];
+
+		for (int i = 0; i < AttrCount; i++) {
+			data[i] = tuple[i + Offset];
+		}
 	}
 
 	public String[] getDatas() {
@@ -93,6 +99,18 @@ public class DQTuple {
 		}
 		for (int i = 0; i < AttrCount; i++) {
 			if (!data[i].equals(tuple[i + Offset])) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean equalsWithoutSSN(String[] tuple) {
+		if (!cuid.equals(tuple[1])) {
+			return false;
+		}
+		for (int i = 0; i < AttrCount; i++) {
+			if (i != SSN_INDEX && !data[i].equals(tuple[i + Offset])) {
 				return false;
 			}
 		}
@@ -152,6 +170,12 @@ public class DQTuple {
 		} else if (!cuid.equals(other.cuid))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "DQTuple [ruids=" + ruids + ", cuid=" + cuid + ", data=" + Arrays.toString(data)
+				+ "]";
 	}
 
 	public static final String RUID = "RUID";

@@ -15,13 +15,21 @@ public class FNameValidator implements AttributeValidator {
 		if (value == null || value.length() == 0) {
 			return false;
 		}
-		if (!Character.isUpperCase(value.charAt(0))) {
-			return false;
-		}
+		boolean upper = true;
 		int len = value.length();
-		for (int i = 1; i < len; i++) {
+		for (int i = 0; i < len; i++) {
 			char c = value.charAt(i);
-			if (!Character.isLetter(c) && c != ',' && c != '.') {
+			if (Character.isLetter(c)) {
+				if (upper && Character.isLowerCase(c)) {
+					return false;
+				}
+				if (!upper && Character.isUpperCase(c)) {
+					return false;
+				}
+				upper = false;
+			} else if (c == ',' && c == '.') {
+				upper = true;
+			} else {
 				return false;
 			}
 		}

@@ -55,7 +55,14 @@ public class AttributeProcessor implements DQCupProcessor {
 	private HashSet<RepairedCell> repairs;
 	private List<String[]> invalidTuples;
 	private List<BitSet> invalidAttrs;
-
+	/**
+	 * CUID->(RUID->SSN)
+	 */
+	private Map<String, Map<Integer, String>> ssnCandidates;
+	/**
+	 * SSN->(CUID->Count)
+	 */
+	private Map<String, Map<String, Integer>> ssnIndex;
 	/**
 	 * result tuple, the inner list is used for storing the conflicting tuples
 	 * with same cuid
@@ -95,10 +102,14 @@ public class AttributeProcessor implements DQCupProcessor {
 
 	private void init(DQCupContext context) {
 		repairs = context.getRepairs();
+
 		invalidTuples = new LinkedList<String[]>();
 		invalidDqTuples = new LinkedList<DQTuple>();
 		invalidAttrs = new LinkedList<BitSet>();
+
 		dqTuples = new TreeMap<String, List<DQTuple>>();
+		ssnCandidates = new HashMap<String, Map<Integer, String>>();
+		ssnIndex = new HashMap<String, Map<String, Integer>>();
 		prevList = null;
 	}
 
@@ -106,6 +117,7 @@ public class AttributeProcessor implements DQCupProcessor {
 		boolean valid = true;
 		BitSet invalidAttrs = new BitSet(DQTuple.AttrCount);
 		int ruid = Integer.valueOf(tuple[0]);
+		String cuid = tuple[1];
 		// validate the single attribute
 		for (Entry<Integer, AttributeValidator> entry : attrValidators.entrySet()) {
 			AttributeValidator validator = entry.getValue();
@@ -154,48 +166,110 @@ public class AttributeProcessor implements DQCupProcessor {
 		if (!valid) {
 			invalidTuples.add(tuple);
 			this.invalidAttrs.add(invalidAttrs);
-		} else {
-			if (prevList == null) {
-				addNewTuple(tuple);
+		}
+		addSSNIndex(ssn, cuid);
+		if (prevList == null) {
+			addNewTuple(tuple, invalidAttrs);
+			return;
+		}
+		DQTuple prevTuple = prevList.get(0);
+		if (!prevTuple.getCuid().equals(tuple[1])) {
+			addNewTuple(tuple, invalidAttrs);
+			return;
+		}
+		// merge
+		for (DQTuple dqTuple : prevList) {
+			if (dqTuple.getRuids().size() == 0) {
+				// a partial dq tuple
+				updateTuple(dqTuple, tuple, invalidAttrs);
+				return;
+			} else if (dqTuple.equalsTuple(tuple)) {
+				// no conflict, just merge
+				dqTuple.getRuids().add(Integer.valueOf(tuple[0]));
+				return;
+			} else if (dqTuple.equalsWithoutSSN(tuple)) {
+				addSSNCandidate(dqTuple, tuple);
 				return;
 			}
-			DQTuple prevTuple = prevList.get(0);
-			if (!prevTuple.getCuid().equals(tuple[1])) {
-				addNewTuple(tuple);
-				return;
-			}
-			// merge
-			for (DQTuple dqTuple : prevList) {
-				if (dqTuple.equalsTuple(tuple)) {
-					// no conflict, just merge
-					dqTuple.getRuids().add(Integer.valueOf(tuple[0]));
-					return;
-				}
-			}
-			// conflict occurs
+		}
+		// conflict occurs
+		if (valid) {
 			prevList.add(new DQTuple(tuple));
 		}
 	}
 
-	private void addNewTuple(String[] tuple) {
-		DQTuple dq = new DQTuple(tuple);
+	private void addSSNCandidate(DQTuple dqTuple, String[] tuple) {
+		String cuid = dqTuple.getCuid();
+		Map<Integer, String> ssns = ssnCandidates.get(cuid);
+		if (ssns == null) {
+			ssns = new HashMap<Integer, String>();
+			String dqSSN = dqTuple.getData(DQTuple.SSN_INDEX);
+			for (Integer i : dqTuple.getRuids()) {
+				ssns.put(i, dqSSN);
+			}
+			ssnCandidates.put(cuid, ssns);
+		}
+		int ruid = Integer.valueOf(tuple[0]);
+		String ssn = tuple[DQTuple.SSN_INDEX + DQTuple.Offset];
+		ssns.put(ruid, ssn);
+	}
+
+	private void addSSNIndex(String ssn, String cuid) {
+		Map<String, Integer> cuids = ssnIndex.get(ssn);
+		if (cuids == null) {
+			cuids = new HashMap<String, Integer>();
+			ssnIndex.put(ssn, cuids);
+		}
+		Integer count = cuids.get(cuid);
+		if (count == null) {
+			cuids.put(cuid, 1);
+		} else {
+			cuids.put(cuid, count + 1);
+		}
+	}
+
+	private void updateTuple(DQTuple dqTuple, String[] tuple, BitSet invalidAttrs) {
+		if (invalidAttrs.cardinality() == 0) {
+			dqTuple.setDatas(tuple);
+		} else {
+			for (int i = 0; i < DQTuple.AttrCount; i++) {
+				if (!invalidAttrs.get(i) && dqTuple.getData(i) == null) {
+					dqTuple.setData(i, tuple[i + DQTuple.Offset]);
+				}
+			}
+		}
+	}
+
+	private void addNewTuple(String[] tuple, BitSet invalidAttrs) {
+		DQTuple dq = null;
+		if (invalidAttrs.cardinality() == 0) {
+			dq = new DQTuple(tuple);
+		} else {
+			dq = new DQTuple(); // only save the correct attributes
+			dq.setCuid(tuple[1]);
+			for (int i = 0; i < DQTuple.AttrCount; i++) {
+				if (!invalidAttrs.get(i)) {
+					dq.setData(i, tuple[i + DQTuple.Offset]);
+				}
+			}
+		}
 		prevList = new LinkedList<DQTuple>();
 		prevList.add(dq);
 		dqTuples.put(dq.getCuid(), prevList);
+
 	}
 
 	private void repair() {
 		if (invalidTuples.size() == 0) {
 			return;
 		}
-
 		Iterator<String[]> tupleIt = invalidTuples.iterator();
 		Iterator<BitSet> attrIt = invalidAttrs.iterator();
 		while (tupleIt.hasNext()) {
 			String[] tuple = tupleIt.next();
 			BitSet invalidAttr = attrIt.next();
+			int ruid = Integer.valueOf(tuple[0]);
 			String cuid = tuple[1];
-	
 			List<DQTuple> dqList = dqTuples.get(cuid);
 			if (dqList == null) {
 				// no correct tuple with same cuid
@@ -204,7 +278,6 @@ public class AttributeProcessor implements DQCupProcessor {
 				dq.setInvalidAttrs(invalidAttr);
 				dqList.add(dq);
 				dqTuples.put(cuid, dqList);
-
 				invalidDqTuples.add(dq);
 			} else {
 				// find dq tuples with same cuid
@@ -212,60 +285,105 @@ public class AttributeProcessor implements DQCupProcessor {
 				for (DQTuple dq : dqList) {
 					if (dq.getInvalidAttrs() == null && dq.partialEquals(tuple, invalidAttr)) {
 						// we can correct the invalid tuple now
-						int ruid = Integer.valueOf(tuple[0]);
 						for (int i = 0; i < DQTuple.AttrCount; i++) {
-							if (invalidAttr.get(i)
-									&& !dq.getData(i).equals(tuple[i + DQTuple.Offset])) {
-								// find an error
-								repairs.add(new RepairedCell(ruid, DQTuple.Attrs[i], dq.getData(i)));
+							if (invalidAttr.get(i)) {
+								String data = dq.getData(i);
+								if (data != null && !data.equals(tuple[i + DQTuple.Offset])) {
+									// find an error
+									repairs.add(new RepairedCell(ruid, DQTuple.Attrs[i], data));
+								}
 							}
 						}
-						dq.getRuids().add(Integer.valueOf(ruid));
+						dq.getRuids().add(ruid);
 						corrected = true;
 						break;
 					}
 				}
-				if (!corrected) {
-					// no partially equal dq tuple, we cannot correct the
-					// invalid tuple right now
+				if (corrected) {
+					continue;
+				}
+				DQTuple majority = dqList.get(0);
+				for (int i = 1; i < dqList.size(); i++) {
+					DQTuple dqTuple = dqList.get(i);
+					if (dqTuple.getRuids().size() > majority.getRuids().size()) {
+						majority = dqTuple;
+					}
+				}
+				for (int i = 0; i < DQTuple.AttrCount; i++) {
+					if (i != DQTuple.SSN_INDEX && invalidAttr.get(i)) {
+						String data = majority.getData(i);
+						if (data != null && !tuple[i + DQTuple.Offset].equals(data)) {
+							repairs.add(new RepairedCell(ruid, DQTuple.Attrs[i], majority
+									.getData(i)));
+							invalidAttr.set(i, false);
+							tuple[i + DQTuple.Offset] = data;
+						}
+					}
+				}
+				if (majority.equalsTuple(tuple)) {
+					majority.getRuids().add(ruid);
+				} else if (majority.equalsWithoutSSN(tuple)) {
+					addSSNCandidate(majority, tuple);
+				} else if (!majority.equalsTuple(tuple)) {
+					// still have errors
 					DQTuple dq = new DQTuple(tuple);
 					dq.setInvalidAttrs(invalidAttr);
 					invalidDqTuples.add(dq);
 					dqList.add(dq);
+					logger.info("Unable to repair:{}", dq);
 				}
 			}
 		}
-		// TODO: This is just an experiment
-		for (Entry<String, List<DQTuple>> entry : dqTuples.entrySet()) {
-			List<DQTuple> tuples = entry.getValue();
-			if (tuples.size() > 1) {
-				DQTuple majority = tuples.get(0);
-				if (majority.getCuid().equals("28176")) {
-					System.out.println();
-				}
-				for (int i = 1; i < tuples.size(); i++) {
-					if (majority.getRuids().size() < tuples.get(i).getRuids().size()) {
-						majority = tuples.get(i);
+		// merge ssn
+		for (Entry<String, Map<Integer, String>> e : ssnCandidates.entrySet()) {
+			Map<String, Integer> validCandidates = new HashMap<String, Integer>();
+			Map<Integer, String> ssns = e.getValue();
+			String cuid = e.getKey();
+			for (Entry<Integer, String> ee : ssns.entrySet()) {
+				String ssn = ee.getValue();
+				Map<String, Integer> cuids = ssnIndex.get(ssn);
+				int count = cuids.get(cuid);
+				boolean valid = true;
+				for (Entry<String, Integer> eee : cuids.entrySet()) {
+					if (eee.getValue() > count) {
+						valid = false;
+						break;
 					}
 				}
-				for (int i = 0; i < tuples.size(); i++) {
-					DQTuple tuple = tuples.get(i);
-					if (tuple != majority) {
-						// repair
-						for (int j = 0; j < DQTuple.AttrCount; j++) {
-							if (!tuple.getData(j).equals(majority.getData(j))) {
-								for (int ruid : tuple.getRuids()) {
-									repairs.add(new RepairedCell(ruid, DQTuple.Attrs[j], majority
-											.getData(j)));
-									majority.getRuids().add(ruid);
-								}
-							}
-						}
+				if (valid) {
+					Integer tupleCount = validCandidates.get(ssn);
+					if (tupleCount == null) {
+						validCandidates.put(ssn, 1);
+					} else {
+						validCandidates.put(ssn, tupleCount + 1);
 					}
 				}
-				tuples.clear();
-				tuples.add(majority);
 			}
+			String ssn = null;
+			int count = 0;
+			for (Entry<String, Integer> ee : validCandidates.entrySet()) {
+				if (ssn == null || ee.getValue() > count) {
+					ssn = ee.getKey();
+					count = ee.getValue();
+				}
+			}
+			List<DQTuple> tuples = dqTuples.get(cuid);
+			DQTuple dqTuple = tuples.get(0);
+			for (DQTuple dq : tuples) {
+				if (!dq.getData(DQTuple.SSN_INDEX).equals(ssn)) {
+					dq.setData(DQTuple.SSN_INDEX, ssn);
+					for (int r : dq.getRuids()) {
+						repairs.add(new RepairedCell(r, DQTuple.SSN, ssn));
+					}
+				}
+			}
+			for (Entry<Integer, String> ee : ssns.entrySet()) {
+				if (!ee.getValue().equals(ssn)) {
+					repairs.add(new RepairedCell(ee.getKey(), DQTuple.SSN, ssn));
+				}
+				dqTuple.getRuids().add(ee.getKey());
+			}
+
 		}
 	}
 }

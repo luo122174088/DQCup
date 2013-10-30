@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import dqcup.repair.RepairedCell;
-import dqcup.repair.Tuple;
 
 public class DQCupChain {
 	private LinkedList<DQCupProcessor> procs = null;

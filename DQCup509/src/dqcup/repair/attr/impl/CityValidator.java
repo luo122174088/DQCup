@@ -16,7 +16,10 @@ public class CityValidator implements AttributeValidator {
 			if (c == ' ' || c == '\'' || c == '-' || c == '/' || c == '.') {
 				upper = true;
 			} else if (Character.isLetter(c)) {
-				if (upper && !Character.isUpperCase(c)) {
+				if (upper && Character.isLowerCase(c)) {
+					return false;
+				}
+				if (!upper && Character.isUpperCase(c)) {
 					return false;
 				}
 				upper = false;
