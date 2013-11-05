@@ -11,7 +11,7 @@ import dqcup.repair.attr.AttributeValidator;
 public class MinitValidator implements AttributeValidator {
 
 	@Override
-	public boolean valid(String value) {
+	public boolean validate(String value) {
 		if (value == null || value.length() == 0) {
 			return true;
 		}

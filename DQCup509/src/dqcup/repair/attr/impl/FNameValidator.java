@@ -11,25 +11,17 @@ import dqcup.repair.attr.AttributeValidator;
 public class FNameValidator implements AttributeValidator {
 
 	@Override
-	public boolean valid(String value) {
+	public boolean validate(String value) {
 		if (value == null || value.length() == 0) {
 			return false;
 		}
-		boolean upper = true;
 		int len = value.length();
-		for (int i = 0; i < len; i++) {
+		if (!Character.isUpperCase(value.charAt(0))) {
+			return false;
+		}
+		for (int i = 1; i < len; i++) {
 			char c = value.charAt(i);
-			if (Character.isLetter(c)) {
-				if (upper && Character.isLowerCase(c)) {
-					return false;
-				}
-				if (!upper && Character.isUpperCase(c)) {
-					return false;
-				}
-				upper = false;
-			} else if (c == ',' && c == '.') {
-				upper = true;
-			} else {
+			if (!Character.isLetter(c) && c != ',' && c != '.') {
 				return false;
 			}
 		}

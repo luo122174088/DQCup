@@ -10,7 +10,7 @@ import dqcup.repair.attr.AttributeValidator;
  */
 public class ZipValidator implements AttributeValidator {
 	@Override
-	public boolean valid(String value) {
+	public boolean validate(String value) {
 		if (value == null) {
 			return false;
 		}

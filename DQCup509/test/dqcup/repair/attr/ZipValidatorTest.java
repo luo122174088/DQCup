@@ -11,10 +11,10 @@ public class ZipValidatorTest {
 	@Test
 	public void testValid() {
 		AttributeValidator repair = new ZipValidator();
-		assertTrue(repair.valid("12345"));
-		assertFalse(repair.valid(null));
-		assertFalse(repair.valid("1234"));
-		assertFalse(repair.valid("1234a"));
+		assertTrue(repair.validate("12345"));
+		assertFalse(repair.validate(null));
+		assertFalse(repair.validate("1234"));
+		assertFalse(repair.validate("1234a"));
 
 	}
 

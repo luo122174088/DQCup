@@ -12,9 +12,9 @@ public class StateValidatorTest {
 	@Test
 	public void testValid() {
 		AttributeValidator repair = new StateValidator();
-		assertTrue(repair.valid("CA"));
-		assertFalse(repair.valid("Luo"));
-		assertFalse(repair.valid(null));
+		assertTrue(repair.validate("CA"));
+		assertFalse(repair.validate("Luo"));
+		assertFalse(repair.validate(null));
 
 	}
 

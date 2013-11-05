@@ -4,13 +4,15 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import dqcup.repair.attr.impl.StAddNumApmtValidator;
+import dqcup.repair.attr.composite.impl.StAddNumApmtValidator;
 
 public class StAddNumApmtValidatorTest {
 
 	@Test
 	public void testValidate() {
 		StAddNumApmtValidator validator = new StAddNumApmtValidator();
+		assertTrue(validator.validate("Jodoinst.jean Lane", "1", "4c8"));
+
 		assertTrue(validator.validate("San Juan", "1", "4c8"));
 		assertTrue(validator.validate("PO Box 123", "", ""));
 		assertFalse(validator.validate("PO Box 123", "1", "4c8"));

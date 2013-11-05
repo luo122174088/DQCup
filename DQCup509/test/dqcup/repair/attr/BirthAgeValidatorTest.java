@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import dqcup.repair.attr.impl.BirthAgeValidator;
+import dqcup.repair.attr.composite.impl.BirthAgeValidator;
 
 public class BirthAgeValidatorTest {
 

@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import dqcup.repair.attr.impl.SSNSalaryTaxValidator;
+import dqcup.repair.attr.composite.impl.SSNSalaryTaxValidator;
 
 public class SSNSalaryTaxValidatorTest {
 

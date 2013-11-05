@@ -1,4 +1,4 @@
-package dqcup.repair.attr.impl;
+package dqcup.repair.attr.composite.impl;
 
 /**
  * SSN:社保号码,9位纯数字,全为0代表无社保卡(无工作),不全为0时是全局唯一的(任何两人社保号不同)
@@ -8,6 +8,7 @@ package dqcup.repair.attr.impl;
  * @author luochen
  * 
  */
+@Deprecated
 public class SSNSalaryTaxValidator {
 	private static final String Null_SSN = "000000000";
 

@@ -11,13 +11,15 @@ public class FNameValidatorTest {
 	@Test
 	public void testValid() {
 		AttributeValidator repair = new FNameValidator();
-		assertTrue(repair.valid("Luochen"));
-		assertFalse(repair.valid("LUOCHEN"));
-		assertFalse(repair.valid("luochen"));
-		assertFalse(repair.valid("lu0chen"));
-		assertFalse(repair.valid("Lu0chen"));
-		assertFalse(repair.valid(null));
-		assertFalse(repair.valid(""));
+		assertTrue(repair.validate("Luochen"));
+		assertTrue(repair.validate("Dept."));
+		assertTrue(repair.validate("Jodoinst.jean"));
+		assertTrue(repair.validate("LUOCHEN"));
+		assertFalse(repair.validate("luochen"));
+		assertFalse(repair.validate("lu0chen"));
+		assertFalse(repair.validate("Lu0chen"));
+		assertFalse(repair.validate(null));
+		assertFalse(repair.validate(""));
 
 	}
 

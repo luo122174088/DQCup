@@ -1,13 +1,9 @@
 package dqcup.repair.comp;
 
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-import dqcup.repair.Tuple;
+import dqcup.repair.attr.AttributeContainer;
 
 /**
  * This a modified tuple version
@@ -17,21 +13,32 @@ import dqcup.repair.Tuple;
  * 
  */
 public class DQTuple {
-	private Set<Integer> ruids = null;
-
+	private List<Integer> ruids = null;
 	private String cuid = null;
 
-	private String[] data = new String[AttrCount];
+	private AttributeContainer[] attributes = null;
 
-	private BitSet invalidAttrs = null;
+	public DQTuple(String cuid, int ruid) {
+		this.cuid = cuid;
+		ruids = new ArrayList<Integer>(5);
+		ruids.add(ruid);
+		attributes = new AttributeContainer[AttrCount];
 
-	public DQTuple() {
-		ruids = new HashSet<Integer>();
+		for (int i = 0; i < AttrCount; i++) {
+			attributes[i] = new AttributeContainer();
+		}
+
 	}
 
-	public DQTuple(String[] tuple) {
-		ruids = new HashSet<Integer>();
-		setDatas(tuple);
+	/**
+	 * Must be invoked sequentially
+	 * 
+	 * @param index
+	 * @param value
+	 * @param ruid
+	 */
+	public void addSingleValue(int index, String value) {
+		attributes[index].add(value);
 	}
 
 	public String getCuid() {
@@ -42,140 +49,16 @@ public class DQTuple {
 		this.cuid = cuid;
 	}
 
-	public String getData(int index) {
-		return data[index];
-	}
-
-	public String getData(String name) {
-		return data[AttrIndex.get(name)];
-	}
-
-	public void setData(int index, String value) {
-		data[index] = value;
-	}
-
-	public void setData(String name, String value) {
-		int index = AttrIndex.get(name);
-		data[index] = value;
-	}
-
-	public void setDatas(String[] tuple) {
-		ruids.clear();
-		ruids.add(Integer.valueOf(tuple[0]));
-		cuid = tuple[1];
-
-		for (int i = 0; i < AttrCount; i++) {
-			data[i] = tuple[i + Offset];
-		}
-	}
-
-	public String[] getDatas() {
-		return data;
-	}
-
-	public Set<Integer> getRuids() {
+	public List<Integer> getRuids() {
 		return ruids;
 	}
 
-	public void setInvalidAttrs(BitSet invalidAttrs) {
-		this.invalidAttrs = invalidAttrs;
+	public void addRuid(int ruid) {
+		this.ruids.add(ruid);
 	}
 
-	public BitSet getInvalidAttrs() {
-		return this.invalidAttrs;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((cuid == null) ? 0 : cuid.hashCode());
-		return result;
-	}
-
-	public boolean equalsTuple(String[] tuple) {
-		if (!cuid.equals(tuple[1])) {
-			return false;
-		}
-		for (int i = 0; i < AttrCount; i++) {
-			if (!data[i].equals(tuple[i + Offset])) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public boolean equalsWithoutSSN(String[] tuple) {
-		if (!cuid.equals(tuple[1])) {
-			return false;
-		}
-		for (int i = 0; i < AttrCount; i++) {
-			if (i != SSN_INDEX && !data[i].equals(tuple[i + Offset])) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * Only test the valid attributes
-	 * 
-	 * @param tuple
-	 * @param invalidAttrs
-	 * @return
-	 */
-	public boolean partialEquals(String[] tuple, BitSet invalidAttrs) {
-		if (!cuid.equals(tuple[1])) {
-			return false;
-		}
-		for (int i = 0; i < AttrCount; i++) {
-			if (!invalidAttrs.get(i) && !data[i].equals(tuple[i + Offset])) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * Only test the valid attributes
-	 * 
-	 * @param tuple
-	 * @param invalidAttrs
-	 * @return
-	 */
-	public boolean partialEquals(Tuple tuple, BitSet invalidAttrs) {
-		if (!cuid.equals(tuple.getValue(DQTuple.CUID))) {
-			return false;
-		}
-		for (int i = 0; i < AttrCount; i++) {
-			if (!invalidAttrs.get(i) && !data[i].equals(tuple.getValue(i + Offset))) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		DQTuple other = (DQTuple) obj;
-		if (cuid == null) {
-			if (other.cuid != null)
-				return false;
-		} else if (!cuid.equals(other.cuid))
-			return false;
-		return true;
-	}
-
-	@Override
-	public String toString() {
-		return "DQTuple [ruids=" + ruids + ", cuid=" + cuid + ", data=" + Arrays.toString(data)
-				+ "]";
+	public AttributeContainer getAttributeContainer(int i) {
+		return attributes[i];
 	}
 
 	public static final String RUID = "RUID";
@@ -200,30 +83,32 @@ public class DQTuple {
 	public static final String SALARY = "SALARY";
 	public static final String TAX = "TAX";
 
+	public static final int Offset = 2;
+
 	public static final int SSN_INDEX = 0;
 	public static final int FNAME_INDEX = 1;
 	public static final int MINIT_INDEX = 2;
 	public static final int LNAME_INDEX = 3;
+
 	public static final int STNUM_INDEX = 4;
 	public static final int STADD_INDEX = 5;
 	public static final int APMT_INDEX = 6;
+
 	public static final int CITY_INDEX = 7;
 	public static final int STATE_INDEX = 8;
 	public static final int ZIP_INDEX = 9;
+
 	public static final int BIRTH_INDEX = 10;
 	public static final int AGE_INDEX = 11;
+
 	public static final int SALARY_INDEX = 12;
 	public static final int TAX_INDEX = 13;
 
 	public static final int AttrCount = 14;
 
-	public static final int Offset = 2;
-	public static final Map<String, Integer> AttrIndex = new HashMap<String, Integer>();
-	public static final String[] Attrs = { SSN, FNAME, MINIT, LNAME, STNUM, STADD, APMT, CITY,
-			STATE, ZIP, BIRTH, AGE, SALARY, TAX };
-	static {
-		for (int i = 0; i < Attrs.length; i++) {
-			AttrIndex.put(Attrs[i], i);
-		}
-	}
+	public static final String[] Attrs = { RUID, CUID, SSN, FNAME, MINIT, LNAME, STNUM, STADD,
+			APMT, CITY, STATE, ZIP, BIRTH, AGE, SALARY, TAX };
+
+	public static final String[] Single_Attrs = { SSN, FNAME, MINIT, LNAME, CITY, STATE, ZIP };
+
 }

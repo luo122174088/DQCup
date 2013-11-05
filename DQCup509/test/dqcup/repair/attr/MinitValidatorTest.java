@@ -11,11 +11,11 @@ public class MinitValidatorTest {
 	@Test
 	public void testValid() {
 		AttributeValidator repair = new MinitValidator();
-		assertTrue(repair.valid(""));
-		assertTrue(repair.valid(null));
-		assertTrue(repair.valid("L"));
-		assertFalse(repair.valid("l"));
-		assertFalse(repair.valid("ll"));
+		assertTrue(repair.validate(""));
+		assertTrue(repair.validate(null));
+		assertTrue(repair.validate("L"));
+		assertFalse(repair.validate("l"));
+		assertFalse(repair.validate("ll"));
 	}
 
 }

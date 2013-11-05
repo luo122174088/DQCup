@@ -61,16 +61,14 @@ public class StateValidator implements AttributeValidator {
 		states.add("WV");
 		states.add("WI");
 		states.add("WY");
-
 		states.add("PR");
 		states.add("VI");
 		states.add("FM");
 		states.add("GU");
-
 	}
 
 	@Override
-	public boolean valid(String value) {
+	public boolean validate(String value) {
 		return states.contains(value);
 	}
 

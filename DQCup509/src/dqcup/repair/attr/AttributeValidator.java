@@ -7,5 +7,5 @@ public interface AttributeValidator {
 	 * @param value
 	 * @return
 	 */
-	public boolean valid(String value);
+	public boolean validate(String value);
 }

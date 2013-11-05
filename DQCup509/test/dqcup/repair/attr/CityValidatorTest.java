@@ -11,14 +11,16 @@ public class CityValidatorTest {
 	@Test
 	public void testValid() {
 		AttributeValidator repair = new CityValidator();
-		assertTrue(repair.valid("Luo"));
-		assertTrue(repair.valid("Luo Chen"));
-		assertFalse(repair.valid("Luo 1Chen"));
-		assertFalse(repair.valid("luo Chen"));
-		assertTrue(repair.valid("Luo Chen"));
-		assertFalse(repair.valid("LUo Chen"));
-		assertFalse(repair.valid("Luo chen"));
-		assertFalse(repair.valid("LUO CHEN"));
+		assertTrue(repair.validate("Luo"));
+		assertTrue(repair.validate("Luo Chen"));
+		assertTrue(repair.validate("Luo of Chen"));
+		assertTrue(repair.validate("Lu'O of Chen"));
+		assertFalse(repair.validate("Luo 1Chen"));
+		assertFalse(repair.validate("luo Chen"));
+		assertTrue(repair.validate("Luo Chen"));
+		assertFalse(repair.validate("LUo Chen"));
+		assertFalse(repair.validate("Luo chen"));
+		assertFalse(repair.validate("LUO CHEN"));
 
 	}
 
