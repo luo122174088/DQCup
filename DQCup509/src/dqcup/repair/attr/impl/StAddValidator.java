@@ -19,9 +19,20 @@ public class StAddValidator implements AttributeValidator {
 			} else {
 				int len = value.length();
 				// verify STADD
+				boolean upper = true;
 				for (int i = 0; i < len; i++) {
 					char c = value.charAt(i);
-					if (!Character.isLetter(c) && c != ' ' && c != ',' && c != '.') {
+					if (Character.isLetter(c)) {
+						if (upper && Character.isLowerCase(c)) {
+							return false;
+						}
+						if (!upper && Character.isUpperCase(c)) {
+							return false;
+						}
+						upper = false;
+					} else if (c == ' ') {
+						upper = true;
+					} else if (c != ',' && c != '.') {
 						return false;
 					}
 				}
@@ -31,5 +42,4 @@ public class StAddValidator implements AttributeValidator {
 			return false;
 		}
 	}
-
 }

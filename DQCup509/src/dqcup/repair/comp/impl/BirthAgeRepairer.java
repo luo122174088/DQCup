@@ -9,9 +9,10 @@ import dqcup.repair.RepairedCell;
 import dqcup.repair.attr.AttributeContainer;
 import dqcup.repair.attr.AttributeContainer.AttributeEntry;
 import dqcup.repair.attr.composite.impl.BirthAgeValidator;
+import dqcup.repair.comp.AttributeRepairer;
 import dqcup.repair.comp.DQTuple;
 
-public class BirthAgeRepairer {
+public class BirthAgeRepairer implements AttributeRepairer {
 
 	private class BirthAge implements Comparable<BirthAge> {
 		public int birth;

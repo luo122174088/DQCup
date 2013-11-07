@@ -1,5 +1,6 @@
 package dqcup.util;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -7,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class MultiMap<K, V> implements Iterable<Entry<K, List<V>>> {
+public class MultiMap<K, V extends Comparable<V>> implements Iterable<Entry<K, List<V>>> {
 	protected Map<K, List<V>> map;
 
 	public MultiMap() {
@@ -48,5 +49,6 @@ public class MultiMap<K, V> implements Iterable<Entry<K, List<V>>> {
 	public Iterator<Entry<K, List<V>>> iterator() {
 		return map.entrySet().iterator();
 	}
+
 
 }

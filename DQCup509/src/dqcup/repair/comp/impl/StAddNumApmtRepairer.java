@@ -9,9 +9,10 @@ import dqcup.repair.RepairedCell;
 import dqcup.repair.attr.AttributeContainer;
 import dqcup.repair.attr.AttributeContainer.AttributeEntry;
 import dqcup.repair.attr.composite.impl.StAddNumApmtValidator;
+import dqcup.repair.comp.AttributeRepairer;
 import dqcup.repair.comp.DQTuple;
 
-public class StAddNumApmtRepairer {
+public class StAddNumApmtRepairer implements AttributeRepairer {
 
 	private class StAddNumApmt implements Comparable<StAddNumApmt> {
 		public int stAdd;

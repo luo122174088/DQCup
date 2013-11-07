@@ -20,6 +20,5 @@ public class TestNormal {
 		}
 		System.out.println();
 		System.out.println(repairs.size());
-
 	}
 }

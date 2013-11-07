@@ -10,10 +10,11 @@ import java.util.Set;
 import dqcup.repair.RepairedCell;
 import dqcup.repair.attr.AttributeContainer;
 import dqcup.repair.attr.AttributeContainer.AttributeEntry;
+import dqcup.repair.comp.AttributeRepairer;
 import dqcup.repair.comp.DQTuple;
 import dqcup.util.CounterSet;
 
-public class SSNRepairer {
+public class SSNRepairer implements AttributeRepairer {
 	/**
 	 * SSN->(CUID->Count)
 	 */

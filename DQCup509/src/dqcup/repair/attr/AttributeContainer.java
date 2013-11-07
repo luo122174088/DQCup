@@ -84,6 +84,9 @@ public class AttributeContainer {
 	 */
 	public void autoRepair(Set<RepairedCell> repairs, String column, List<Integer> ruids) {
 		String candidate = maximalValue();
+		if (candidate == null) {
+			System.err.println("Invalid " + column + " ruid:" + ruids.get(0));
+		}
 		for (int i = 0; i < values.size(); i++) {
 			if (candidate == null || !candidate.equals(values.get(i))) {
 				repairs.add(new RepairedCell(ruids.get(i), column, candidate));
@@ -108,5 +111,9 @@ public class AttributeContainer {
 
 	public List<String> getValues() {
 		return values;
+	}
+
+	public String getValue(int i) {
+		return values.get(i);
 	}
 }

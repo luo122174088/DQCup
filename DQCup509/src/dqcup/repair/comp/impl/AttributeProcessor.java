@@ -9,11 +9,9 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +32,7 @@ import dqcup.repair.attr.impl.StNumValidator;
 import dqcup.repair.attr.impl.StateValidator;
 import dqcup.repair.attr.impl.TaxValidator;
 import dqcup.repair.attr.impl.ZipValidator;
+import dqcup.repair.comp.AttributeRepairer;
 import dqcup.repair.comp.DQCupContext;
 import dqcup.repair.comp.DQCupProcessor;
 import dqcup.repair.comp.DQTuple;
@@ -73,38 +72,29 @@ public class AttributeProcessor implements DQCupProcessor {
 		autoRepair[DQTuple.STADD_INDEX] = false;
 		autoRepair[DQTuple.STNUM_INDEX] = false;
 		autoRepair[DQTuple.APMT_INDEX] = false;
+
+		autoRepair[DQTuple.CITY_INDEX] = false;
 	}
 	private ColumnNames columnNames;
 	private HashSet<RepairedCell> repairs;
 
 	private Map<String, DQTuple> dqTuples;
 
-	private List<String> invalidCuids;
-	private List<BitSet> invalidAttrs;
+	private Map<String, BitSet> invalidTuples;
 
-	private List<DQTuple> invalidDqTuples;
-	private DQTuple prevTuple;
-	private String[] prevValues;
-	private BitSet prevInvalidAttr;
-	private SSNRepairer ssnRepairer;
-	private BirthAgeRepairer birthAgeRepairer;
-	private StAddNumApmtRepairer stAddNumApmtRepairer;
+	private AttributeRepairer ssnRepairer;
+	private AttributeRepairer birthAgeRepairer;
+	private AttributeRepairer stAddNumApmtRepairer;
+	private AttributeRepairer cityRepairer;
 
 	private void init(DQCupContext context) {
 		repairs = context.getRepairs();
-
-		invalidDqTuples = new LinkedList<DQTuple>();
-		invalidAttrs = new LinkedList<BitSet>();
-
-		invalidCuids = new LinkedList<String>();
-
-		dqTuples = new TreeMap<String, DQTuple>();
-		prevTuple = null;
-		prevValues = null;
-		prevInvalidAttr = null;
+		invalidTuples = new HashMap<String, BitSet>();
+		dqTuples = new HashMap<String, DQTuple>();
 		ssnRepairer = new SSNRepairer();
 		birthAgeRepairer = new BirthAgeRepairer();
 		stAddNumApmtRepairer = new StAddNumApmtRepairer();
+		cityRepairer = new CityRepairer();
 	}
 
 	@Override
@@ -125,18 +115,12 @@ public class AttributeProcessor implements DQCupProcessor {
 					processTuple(tuple);
 				}
 			}
-			if (!invalidCuids.get(invalidCuids.size() - 1).equals(prevTuple.getCuid())
-					&& prevInvalidAttr.cardinality() > 0) {
-				invalidAttrs.add(prevInvalidAttr);
-				invalidCuids.add(prevTuple.getCuid());
-			}
 			reader.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		repair();
 		context.set("dqTuples", dqTuples);
-		context.set("invalidDqTuples", invalidDqTuples);
 		context.set("columnNames", columnNames);
 	}
 
@@ -144,21 +128,19 @@ public class AttributeProcessor implements DQCupProcessor {
 		boolean validSSN = true;
 		int ruid = Integer.valueOf(tuple[0]);
 		String cuid = tuple[1];
-		if (prevTuple == null || !prevTuple.getCuid().equals(cuid)) {
-			if (prevTuple != null) {
-				if (prevInvalidAttr.cardinality() > 0) {
-					invalidAttrs.add(prevInvalidAttr);
-					invalidCuids.add(prevTuple.getCuid());
-				}
-			}
-
-			prevTuple = new DQTuple(cuid, ruid);
-			dqTuples.put(cuid, prevTuple);
-			prevValues = tuple;
-			prevInvalidAttr = new BitSet(DQTuple.AttrCount);
-
+		DQTuple dqTuple = dqTuples.get(cuid);
+		boolean created = false;
+		boolean valid = true;
+		if (dqTuple == null) {
+			dqTuple = new DQTuple(cuid, ruid);
+			dqTuples.put(cuid, dqTuple);
+			created = true;
 		} else {
-			prevTuple.addRuid(ruid);
+			dqTuple.addRuid(ruid);
+		}
+		BitSet invalidAttr = invalidTuples.get(cuid);
+		if (invalidAttr == null) {
+			invalidAttr = new BitSet(DQTuple.AttrCount);
 		}
 		// validate the single attribute
 		for (Entry<Integer, AttributeValidator> entry : attrValidators.entrySet()) {
@@ -169,39 +151,41 @@ public class AttributeProcessor implements DQCupProcessor {
 				if (index == DQTuple.SSN_INDEX) {
 					validSSN = false;
 				}
-				prevInvalidAttr.set(index);
-				prevTuple.addSingleValue(index, null);
+				valid = false;
+				invalidAttr.set(index);
+				dqTuple.addSingleValue(index, null);
 				logger.info("Ruid:{}\tInvalid {}:{}", ruid, DQTuple.Attrs[index], value);
 			} else {
-				prevTuple.addSingleValue(index, value);
+				dqTuple.addSingleValue(index, value);
 			}
 		}
 
-		if (prevValues != tuple) {
+		if (!created) {
 			for (int i = 0; i < DQTuple.AttrCount; i++) {
-				if (!tuple[i + DQTuple.Offset].equals(prevValues[i + DQTuple.Offset])) {
-					prevInvalidAttr.set(i);
+				if (!tuple[i + DQTuple.Offset].equals(dqTuple.getAttributeContainer(i).getValue(0))) {
+					invalidAttr.set(i);
+					valid = false;
 				}
 			}
 		}
+		if (!created && !valid) {
+			invalidTuples.put(cuid, invalidAttr);
+		}
 		if (validSSN) {
 			String ssn = tuple[DQTuple.SSN_INDEX + DQTuple.Offset];
-			ssnRepairer.addSSNIndex(ssn, cuid);
+			((SSNRepairer) ssnRepairer).addSSNIndex(ssn, cuid);
 		}
 	}
 
 	private void repair() {
-		Iterator<BitSet> attrIt = invalidAttrs.iterator();
-		Iterator<String> cuidIt = invalidCuids.iterator();
+		Iterator<Entry<String, BitSet>> it = invalidTuples.entrySet().iterator();
 
-		while (cuidIt.hasNext()) {
-			String cuid = cuidIt.next();
-			BitSet invalidAttr = attrIt.next();
+		while (it.hasNext()) {
+			Entry<String, BitSet> e = it.next();
+			String cuid = e.getKey();
+			BitSet invalidAttr = e.getValue();
 			DQTuple tuple = dqTuples.get(cuid);
 			List<Integer> ruids = tuple.getRuids();
-			if(cuid.equals("81233")){
-				System.out.println();
-			}
 			if (invalidAttr.get(DQTuple.SSN_INDEX)) {
 				ssnRepairer.repair(tuple, repairs, invalidAttr);
 			}
@@ -211,6 +195,9 @@ public class AttributeProcessor implements DQCupProcessor {
 			if (invalidAttr.get(DQTuple.STADD_INDEX) || invalidAttr.get(DQTuple.STNUM_INDEX)
 					|| invalidAttr.get(DQTuple.APMT_INDEX)) {
 				stAddNumApmtRepairer.repair(tuple, repairs, invalidAttr);
+			}
+			if (invalidAttr.get(DQTuple.CITY_INDEX)) {
+				cityRepairer.repair(tuple, repairs, invalidAttr);
 			}
 			for (int i = 0; i < DQTuple.AttrCount; i++) {
 				if (invalidAttr.get(i) && autoRepair[i]) {

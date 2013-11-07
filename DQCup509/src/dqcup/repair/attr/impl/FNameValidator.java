@@ -21,7 +21,7 @@ public class FNameValidator implements AttributeValidator {
 		}
 		for (int i = 1; i < len; i++) {
 			char c = value.charAt(i);
-			if (!Character.isLetter(c) && c != ',' && c != '.') {
+			if (!Character.isLowerCase(c) && c != ',' && c != '.') {
 				return false;
 			}
 		}

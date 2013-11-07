@@ -38,6 +38,8 @@ public class CityValidator implements AttributeValidator {
 		Preps.add("under");
 		Preps.add("up");
 		Preps.add("with");
+		Preps.add("the");
+
 	}
 
 	@Override
@@ -71,4 +73,36 @@ public class CityValidator implements AttributeValidator {
 		return true;
 	}
 
+	public boolean strictValidate(String value) {
+		if (value == null || value.length() == 0) {
+			return false;
+		}
+		int length = 0;
+		boolean upper = true;
+		String[] strs = value.split(" ");
+		for (String str : strs) {
+			if (Preps.contains(str)) {
+				continue;
+			}
+			upper = true;
+			length = str.length();
+			for (int i = 0; i < length; i++) {
+				char c = str.charAt(i);
+				if (c == '\'' || c == '-' || c == '/' || c == '.') {
+					upper = true;
+				} else if (Character.isLetter(c)) {
+					if (upper && Character.isLowerCase(c)) {
+						return false;
+					}
+					if (!upper && Character.isUpperCase(c)) {
+						return false;
+					}
+					upper = false;
+				} else {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 }
