@@ -47,7 +47,7 @@ public class BirthAgeRepairer implements AttributeRepairer {
 		List<AttributeEntry> birthList = birthContainer.getOrderValues();
 		List<AttributeEntry> ageList = ageContainer.getOrderValues();
 		List<Integer> ruids = tuple.getRuids();
-		if (birthList.size() == 1 && ageList.size() == 1) {
+		if (birthList.size() <= 1 && ageList.size() <= 1) {
 			birthContainer.autoRepair(repairs, DQTuple.BIRTH, ruids);
 			ageContainer.autoRepair(repairs, DQTuple.AGE, ruids);
 			return;
@@ -72,12 +72,12 @@ public class BirthAgeRepairer implements AttributeRepairer {
 						&& !visited[birthAge.birth + 1][birthAge.age]) {
 					visited[birthAge.birth + 1][birthAge.age] = true;
 					queue.add(new BirthAge(birthAge.birth + 1, birthAge.age, birthList
-							.get(birthAge.birth + 1).count * ageEntry.count));
+							.get(birthAge.birth + 1).count + ageEntry.count));
 				}
 				if (birthAge.age + 1 < ageList.size() && !visited[birthAge.birth][birthAge.age + 1]) {
 					visited[birthAge.birth][birthAge.age + 1] = true;
 					queue.add(new BirthAge(birthAge.birth, birthAge.age + 1, birthEntry.count
-							* ageList.get(birthAge.age + 1).count));
+							+ ageList.get(birthAge.age + 1).count));
 				}
 			}
 		} else {

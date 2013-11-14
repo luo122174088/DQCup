@@ -14,6 +14,9 @@ public class StAddValidator implements AttributeValidator {
 				if (addrs.length != 3) {
 					return false;
 				}
+				if (addrs[2].length() > 4 || addrs[2].length() < 1) {
+					return false;
+				}
 				Integer.parseInt(addrs[2]);
 				return true;
 			} else {

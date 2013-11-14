@@ -19,6 +19,9 @@ import org.slf4j.LoggerFactory;
 import dqcup.repair.ColumnNames;
 import dqcup.repair.RepairedCell;
 import dqcup.repair.attr.AttributeValidator;
+import dqcup.repair.attr.composite.impl.BirthAgeValidator;
+import dqcup.repair.attr.composite.impl.SalaryTaxValidator;
+import dqcup.repair.attr.composite.impl.StAddNumApmtValidator;
 import dqcup.repair.attr.impl.AgeValidator;
 import dqcup.repair.attr.impl.ApmtValidator;
 import dqcup.repair.attr.impl.BirthValidator;
@@ -51,13 +54,15 @@ public class AttributeProcessor implements DQCupProcessor {
 		attrValidators.put(DQTuple.FNAME_INDEX, new FNameValidator());
 		attrValidators.put(DQTuple.MINIT_INDEX, new MinitValidator());
 		attrValidators.put(DQTuple.LNAME_INDEX, new FNameValidator());
+
 		attrValidators.put(DQTuple.STNUM_INDEX, new StNumValidator());
 		attrValidators.put(DQTuple.STADD_INDEX, new StAddValidator());
-
 		attrValidators.put(DQTuple.APMT_INDEX, new ApmtValidator());
+
 		attrValidators.put(DQTuple.CITY_INDEX, new CityValidator());
 		attrValidators.put(DQTuple.STATE_INDEX, new StateValidator());
 		attrValidators.put(DQTuple.ZIP_INDEX, new ZipValidator());
+
 		attrValidators.put(DQTuple.BIRTH_INDEX, new BirthValidator());
 		attrValidators.put(DQTuple.AGE_INDEX, new AgeValidator());
 		attrValidators.put(DQTuple.SALARY_INDEX, new SalaryValidator());
@@ -87,6 +92,10 @@ public class AttributeProcessor implements DQCupProcessor {
 	private AttributeRepairer stAddNumApmtRepairer;
 	private AttributeRepairer cityRepairer;
 
+	private BirthAgeValidator birthAgeValidator;
+	private StAddNumApmtValidator stAddNumApmtValidator;
+	private SalaryTaxValidator salaryTaxValidator;
+
 	private void init(DQCupContext context) {
 		repairs = context.getRepairs();
 		invalidTuples = new HashMap<String, BitSet>();
@@ -95,6 +104,10 @@ public class AttributeProcessor implements DQCupProcessor {
 		birthAgeRepairer = new BirthAgeRepairer();
 		stAddNumApmtRepairer = new StAddNumApmtRepairer();
 		cityRepairer = new CityRepairer();
+
+		birthAgeValidator = new BirthAgeValidator();
+		stAddNumApmtValidator = new StAddNumApmtValidator();
+		salaryTaxValidator = new SalaryTaxValidator();
 	}
 
 	@Override
@@ -162,13 +175,15 @@ public class AttributeProcessor implements DQCupProcessor {
 
 		if (!created) {
 			for (int i = 0; i < DQTuple.AttrCount; i++) {
-				if (!tuple[i + DQTuple.Offset].equals(dqTuple.getAttributeContainer(i).getValue(0))) {
+				if (!invalidAttr.get(i)
+						&& !tuple[i + DQTuple.Offset].equals(dqTuple.getAttributeContainer(i)
+								.getValue(0))) {
 					invalidAttr.set(i);
 					valid = false;
 				}
 			}
 		}
-		if (!created && !valid) {
+		if (!valid) {
 			invalidTuples.put(cuid, invalidAttr);
 		}
 		if (validSSN) {

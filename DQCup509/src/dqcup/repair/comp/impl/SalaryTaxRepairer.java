@@ -2,19 +2,16 @@ package dqcup.repair.comp.impl;
 
 import java.util.BitSet;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import dqcup.repair.RepairedCell;
 import dqcup.repair.comp.AttributeRepairer;
 import dqcup.repair.comp.DQTuple;
 import dqcup.util.MultiMap;
 
+@Deprecated
 public class SalaryTaxRepairer implements AttributeRepairer {
 
 	private class SalaryTax implements Comparable<SalaryTax> {

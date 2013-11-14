@@ -65,8 +65,8 @@ public class StAddNumApmtRepairer implements AttributeRepairer {
 			AttributeEntry stNumEntry = stNumList.get(0);
 			AttributeEntry apmtEntry = apmtList.get(0);
 			visited[0][0][0] = true;
-			queue.add(new StAddNumApmt(0, 0, 0, stAddEntry.count * stNumEntry.count
-					* apmtEntry.count));
+			queue.add(new StAddNumApmt(0, 0, 0, stAddEntry.count + stNumEntry.count
+					+ apmtEntry.count));
 			while (!queue.isEmpty()) {
 				StAddNumApmt s = queue.poll();
 				stAddEntry = stAddList.get(s.stAdd);
@@ -80,19 +80,19 @@ public class StAddNumApmtRepairer implements AttributeRepairer {
 				}
 				if (s.stAdd + 1 < stAddList.size() && !visited[s.stAdd + 1][s.stNum][s.apmt]) {
 					queue.add(new StAddNumApmt(s.stAdd + 1, s.stNum, s.apmt, stAddList
-							.get(s.stAdd + 1).count * stNumEntry.count * apmtEntry.count));
+							.get(s.stAdd + 1).count + stNumEntry.count + apmtEntry.count));
 					visited[s.stAdd + 1][s.stNum][s.apmt] = true;
 				}
 
 				if (s.stNum + 1 < stNumList.size() && !visited[s.stAdd][s.stNum + 1][s.apmt]) {
 					queue.add(new StAddNumApmt(s.stAdd, s.stNum + 1, s.apmt, stAddEntry.count
-							* stNumList.get(s.stNum + 1).count * apmtEntry.count));
+							+ stNumList.get(s.stNum + 1).count + apmtEntry.count));
 					visited[s.stAdd][s.stNum + 1][s.apmt] = true;
 				}
 
 				if (s.apmt + 1 < apmtList.size() && !visited[s.stAdd][s.stNum][s.apmt + 1]) {
-					queue.add(new StAddNumApmt(s.stAdd + 1, s.stNum, s.apmt, stAddEntry.count
-							* stNumEntry.count * apmtList.get(s.apmt + 1).count));
+					queue.add(new StAddNumApmt(s.stAdd, s.stNum, s.apmt+1, stAddEntry.count
+							+ stNumEntry.count + apmtList.get(s.apmt + 1).count));
 					visited[s.stAdd][s.stNum][s.apmt + 1] = true;
 				}
 

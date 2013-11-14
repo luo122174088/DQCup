@@ -1,6 +1,5 @@
 package dqcup.repair.attr.composite.impl;
 
-@Deprecated
 public class SalaryTaxValidator {
 	public boolean validate(String salary, String tax) {
 		try {
@@ -15,10 +14,15 @@ public class SalaryTaxValidator {
 			if (iSalary > 1500 && iTax == 0) {
 				return false;
 			}
+			if (iSalary < 1500 && iTax > 0) {
+				return false;
+			}
+			if (iTax > iSalary) {
+				return false;
+			}
 			return true;
 		} catch (Exception e) {
 			return false;
 		}
-
 	}
 }
