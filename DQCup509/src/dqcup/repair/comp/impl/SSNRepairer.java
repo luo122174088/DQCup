@@ -36,22 +36,70 @@ public class SSNRepairer implements AttributeRepairer {
 
 	public void repair(DQTuple tuple, Set<RepairedCell> repairs, BitSet invalidAttrs) {
 		AttributeContainer ssnContainer = tuple.getAttributeContainer(DQTuple.SSN_INDEX);
+		AttributeContainer salaryContainer = tuple.getAttributeContainer(DQTuple.SALARY_INDEX);
+		AttributeContainer taxContainer = tuple.getAttributeContainer(DQTuple.TAX_INDEX);
+
+		String possibleCandidate = null;
 		String candidate = null;
+		int maximal = 0;
+
 		List<AttributeEntry> values = ssnContainer.getOrderValues();
 		List<Integer> ruids = tuple.getRuids();
+
+		List<String> salaries = salaryContainer.getValues();
+		List<String> taxes = taxContainer.getValues();
+		if (tuple.getCuid().equals("72836")) {
+			System.out.println();
+		}
 		for (AttributeEntry e : values) {
-			candidate = e.value;
+			possibleCandidate = e.value;
 			boolean valid = true;
-			if (!candidate.equals(SSN_Null)) {
-				CounterSet<String> cuids = ssnIndex.get(candidate);
+			if (!possibleCandidate.equals(SSN_Null)) {
+				CounterSet<String> cuids = ssnIndex.get(possibleCandidate);
 				for (Entry<String, Integer> ee : cuids) {
 					if (ee.getValue() > e.count) {
 						valid = false;
+						break;
 					}
 				}
 			}
 			if (valid) {
-				break;
+				int count = e.count;
+				for (int i = 0; i < salaries.size(); i++) {
+					String salary = salaries.get(i);
+					String tax = taxes.get(i);
+					if (salary != null) {
+						if (possibleCandidate.equals(SSN_Null) && salary.equals("0")) {
+							count++;
+						} else if (!possibleCandidate.equals(SSN_Null) && !salary.equals("0")) {
+							count++;
+						}
+					}
+					if (tax != null) {
+						if (salary != null) {
+							int iSalary = Integer.valueOf(salary);
+							if (!possibleCandidate.equals(SSN_Null)) {
+								if ((iSalary <= 1500 && tax.equals("0"))
+										|| (iSalary > 1500 && !tax.equals("0"))) {
+									count++;
+								}
+							} else if (tax.equals("0")) {
+								count++;
+							}
+						} else {
+							if (possibleCandidate.equals(SSN_Null) && tax.equals("0")) {
+								count++;
+							} else if (!possibleCandidate.equals(SSN_Null) && !tax.equals("0")) {
+								count++;
+							}
+						}
+					}
+				}
+				if (count > maximal) {
+					candidate = possibleCandidate;
+					maximal = count;
+				}
+
 			}
 		}
 		ssnContainer.superviseRepair(repairs, DQTuple.SSN, candidate, ruids);

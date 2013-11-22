@@ -68,8 +68,8 @@ public class TestUtil {
 					}
 				}
 			}
-			for (RepairedCell cell : truth) {
-				if (!found.contains(cell)) {
+			for (RepairedCell cell : found) {
+				if (!truth.contains(cell)) {
 					System.out.println(cell);
 				}
 			}

@@ -16,21 +16,33 @@ public class BirthAgeValidator {
 	static {
 		format.setLenient(false);
 	}
+	public static final int Invalid_Birth = 0x1;
+	public static final int Invalid_Age = 0x2;
+	public static final int Invalid_Conflit = 0x4;
 
-	public boolean strictValidate(String birth, String age) {
+	public int strictValidate(String birth, String age) {
+		int result = 0;
+		int year = -1;
 		try {
 			Date date = format.parse(birth);
 			Calendar calendar = Calendar.getInstance();
 			calendar.setTime(date);
-			int year = calendar.get(Calendar.YEAR);
+			year = calendar.get(Calendar.YEAR);
 			if (year > 1989 || year < 1930) {
-				return false;
+				result |= Invalid_Birth;
 			}
-			int iAge = Integer.valueOf(age);
-			return iAge == 2013 - year;
 		} catch (Exception e) {
-			return false;
+			result |= Invalid_Birth;
 		}
+		try {
+			int iAge = Integer.valueOf(age);
+			if (year > 0 && iAge != 2013 - year) {
+				result |= Invalid_Conflit;
+			}
+		} catch (Exception e) {
+			result |= Invalid_Age;
+		}
+		return result;
 	}
 
 	public boolean validate(String birth, String age) {

@@ -37,8 +37,8 @@ public class DQTuple {
 	 * @param value
 	 * @param ruid
 	 */
-	public void addSingleValue(int index, String value) {
-		attributes[index].add(value);
+	public void addSingleValue(int index, String value, String origin) {
+		attributes[index].add(value, origin);
 	}
 
 	public String getCuid() {

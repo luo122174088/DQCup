@@ -8,7 +8,6 @@ import dqcup.repair.attr.impl.SalaryValidator;
 import dqcup.repair.attr.impl.StateValidator;
 import dqcup.repair.attr.impl.TaxValidator;
 import dqcup.repair.comp.DQTuple;
-import dqcup.repair.comp.impl.SalaryTaxRepairer;
 
 public class TestSalary {
 	public static void main(String[] args) throws Exception {
@@ -18,7 +17,6 @@ public class TestSalary {
 		SalaryValidator salaryValidator = new SalaryValidator();
 		TaxValidator taxValidator = new TaxValidator();
 		boolean column = true;
-		SalaryTaxRepairer repairer = new SalaryTaxRepairer();
 		SalaryTaxValidator stValidator = new SalaryTaxValidator();
 		while ((line = reader.readLine()) != null) {
 			if (column) {

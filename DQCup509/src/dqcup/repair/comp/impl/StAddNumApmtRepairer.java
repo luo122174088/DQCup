@@ -91,7 +91,7 @@ public class StAddNumApmtRepairer implements AttributeRepairer {
 				}
 
 				if (s.apmt + 1 < apmtList.size() && !visited[s.stAdd][s.stNum][s.apmt + 1]) {
-					queue.add(new StAddNumApmt(s.stAdd, s.stNum, s.apmt+1, stAddEntry.count
+					queue.add(new StAddNumApmt(s.stAdd, s.stNum, s.apmt + 1, stAddEntry.count
 							+ stNumEntry.count + apmtList.get(s.apmt + 1).count));
 					visited[s.stAdd][s.stNum][s.apmt + 1] = true;
 				}

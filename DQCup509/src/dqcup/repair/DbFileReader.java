@@ -14,7 +14,7 @@ public class DbFileReader {
 		try {
 			FileReader fr = new FileReader(file);
 			BufferedReader br = new BufferedReader(fr);
-			
+
 			String line = null;
 			boolean columnNameLine = true;
 			ColumnNames columnNames = null;
@@ -35,7 +35,7 @@ public class DbFileReader {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return tupleList;
 	}
 }

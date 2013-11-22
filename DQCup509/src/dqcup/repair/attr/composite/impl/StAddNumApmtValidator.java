@@ -9,62 +9,66 @@ public class StAddNumApmtValidator {
 
 	private static final String POBox_Prefix = "PO Box";
 
-	public boolean strictValidate(String stAdd, String stNum, String apmt) {
-		try {
-			if (stAdd.startsWith(POBox_Prefix)) {
-				// PO BOX xxxx
-				String[] addrs = stAdd.split("\\s");
-				if (addrs.length != 3) {
-					return false;
-				}
-				Integer.parseInt(addrs[2]);
-				return stNum.isEmpty() && apmt.isEmpty();
-			} else {
-				int len = stAdd.length();
-				// verify STADD
-				boolean upper = true;
-				for (int i = 0; i < len; i++) {
-					char c = stAdd.charAt(i);
-					if (Character.isLetter(c)) {
-						if (upper && Character.isLowerCase(c)) {
-							return false;
-						}
-						if (!upper && Character.isUpperCase(c)) {
-							return false;
-						}
-						upper = false;
-					} else if (c == ' ') {
-						upper = true;
-					} else if (c != ',' && c != '.') {
-						return false;
-					}
-				}
+	public static final int Invalid_StAdd = 0x1;
 
-				if (stNum.isEmpty()) {
-					return true;
-				}
-				len = stNum.length();
-				if (len > 4) {
-					return false;
-				}
-				for (int i = 0; i < len; i++) {
-					char c = stNum.charAt(i);
-					if (!Character.isDigit(c)) {
-						return false;
+	public static final int Invalid_StNum = 0x2;
+
+	public static final int Invalid_Apmt = 0x4;
+
+	public static final int Invalid_Conflict = 0x8;
+
+	public int strictValidate(String stAdd, String stNum, String apmt) {
+		int result = 0;
+		if (stAdd.startsWith(POBox_Prefix)) {
+			// PO BOX xxxx
+			String[] addrs = stAdd.split("\\s");
+			if (addrs.length != 3) {
+				result = result | Invalid_StAdd;
+			} else {
+				for (int i = 0; i < addrs[2].length(); i++) {
+					if (!Character.isDigit(addrs[2].charAt(i))) {
+						result = result | Invalid_StAdd;
+						break;
 					}
 				}
-				if (apmt.isEmpty()) {
-					return true;
-				}
-				len = apmt.length();
-				if (len != 3) {
-					return false;
-				}
-				return Character.isDigit(apmt.charAt(0)) && Character.isLowerCase(apmt.charAt(1))
-						&& Character.isDigit(apmt.charAt(2));
 			}
-		} catch (Exception e) {
-			return false;
+			if (!stNum.isEmpty() || !apmt.isEmpty()) {
+				result |= Invalid_Conflict;
+			}
+			return result;
+		} else {
+			if (stNum.isEmpty() && apmt.isEmpty()) {
+				return Invalid_Conflict;
+			}
+			int len = stAdd.length();
+			// verify STADD
+			for (int i = 0; i < len; i++) {
+				char c = stAdd.charAt(i);
+				if (!Character.isLetter(c) && c != ' ' && c != ',' && c != '.') {
+					result |= Invalid_StAdd;
+					break;
+				}
+			}
+			len = stNum.length();
+			if (len < 1 || len > 4) {
+				result |= Invalid_StNum;
+			}
+			for (int i = 0; i < len; i++) {
+				char c = stNum.charAt(i);
+				if (!Character.isDigit(c)) {
+					result |= Invalid_StNum;
+					break;
+				}
+			}
+			len = apmt.length();
+			if (len != 3) {
+				result |= Invalid_Apmt;
+			}
+			if (!(Character.isDigit(apmt.charAt(0)) && Character.isLowerCase(apmt.charAt(1)) && Character
+					.isDigit(apmt.charAt(2)))) {
+				result |= Invalid_Apmt;
+			}
+			return result;
 		}
 
 	}

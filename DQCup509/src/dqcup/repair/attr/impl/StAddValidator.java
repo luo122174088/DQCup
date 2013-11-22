@@ -29,9 +29,9 @@ public class StAddValidator implements AttributeValidator {
 						if (upper && Character.isLowerCase(c)) {
 							return false;
 						}
-						if (!upper && Character.isUpperCase(c)) {
-							return false;
-						}
+						// if (!upper && Character.isUpperCase(c)) {
+						// return false;
+						// }
 						upper = false;
 					} else if (c == ' ') {
 						upper = true;

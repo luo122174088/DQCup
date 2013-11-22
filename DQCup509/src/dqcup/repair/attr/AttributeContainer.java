@@ -32,6 +32,8 @@ public class AttributeContainer {
 
 	private List<String> values = new ArrayList<String>(5);
 
+	private List<String> originalValues = new ArrayList<String>(5);
+
 	private List<AttributeEntry> orderedValues = null;
 
 	public List<AttributeEntry> getOrderValues() {
@@ -87,8 +89,8 @@ public class AttributeContainer {
 		if (candidate == null) {
 			System.err.println("Invalid " + column + " ruid:" + ruids.get(0));
 		}
-		for (int i = 0; i < values.size(); i++) {
-			if (candidate == null || !candidate.equals(values.get(i))) {
+		for (int i = 0; i < originalValues.size(); i++) {
+			if (!originalValues.get(i).equals(candidate)) {
 				repairs.add(new RepairedCell(ruids.get(i), column, candidate));
 				values.set(i, candidate);
 			}
@@ -97,16 +99,17 @@ public class AttributeContainer {
 
 	public void superviseRepair(Set<RepairedCell> repairs, String column, String candidate,
 			List<Integer> ruids) {
-		for (int i = 0; i < values.size(); i++) {
-			if (candidate == null || !candidate.equals(values.get(i))) {
+		for (int i = 0; i < originalValues.size(); i++) {
+			if (!originalValues.get(i).equals(candidate)) {
 				repairs.add(new RepairedCell(ruids.get(i), column, candidate));
 				values.set(i, candidate);
 			}
 		}
 	}
 
-	public void add(String value) {
+	public void add(String value, String origin) {
 		values.add(value);
+		originalValues.add(origin);
 	}
 
 	public List<String> getValues() {
