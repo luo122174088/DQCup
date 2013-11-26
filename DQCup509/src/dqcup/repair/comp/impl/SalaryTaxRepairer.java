@@ -7,6 +7,7 @@ import dqcup.repair.RepairedCell;
 import dqcup.repair.comp.AttributeRepairer;
 import dqcup.repair.comp.DQTuple;
 
+@Deprecated
 public class SalaryTaxRepairer implements AttributeRepairer {
 
 	@Override

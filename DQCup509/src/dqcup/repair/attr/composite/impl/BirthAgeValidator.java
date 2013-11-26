@@ -37,7 +37,7 @@ public class BirthAgeValidator {
 		try {
 			int iAge = Integer.valueOf(age);
 			if (year > 0 && iAge != 2013 - year) {
-				result |= Invalid_Conflit;
+				result |= Invalid_Age;
 			}
 		} catch (Exception e) {
 			result |= Invalid_Age;

@@ -12,6 +12,7 @@ import dqcup.repair.attr.composite.impl.StAddNumApmtValidator;
 import dqcup.repair.comp.AttributeRepairer;
 import dqcup.repair.comp.DQTuple;
 
+@Deprecated
 public class StAddNumApmtRepairer implements AttributeRepairer {
 
 	private class StAddNumApmt implements Comparable<StAddNumApmt> {

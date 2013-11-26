@@ -33,12 +33,12 @@ public class StAddNumApmtValidator {
 				}
 			}
 			if (!stNum.isEmpty() || !apmt.isEmpty()) {
-				result |= Invalid_Conflict;
+				result |= Invalid_StNum | Invalid_Apmt;
 			}
 			return result;
 		} else {
 			if (stNum.isEmpty() && apmt.isEmpty()) {
-				return Invalid_Conflict;
+				return Invalid_StNum | Invalid_Apmt;
 			}
 			int len = stAdd.length();
 			// verify STADD
@@ -63,8 +63,7 @@ public class StAddNumApmtValidator {
 			len = apmt.length();
 			if (len != 3) {
 				result |= Invalid_Apmt;
-			}
-			if (!(Character.isDigit(apmt.charAt(0)) && Character.isLowerCase(apmt.charAt(1)) && Character
+			} else if (!(Character.isDigit(apmt.charAt(0)) && Character.isLowerCase(apmt.charAt(1)) && Character
 					.isDigit(apmt.charAt(2)))) {
 				result |= Invalid_Apmt;
 			}

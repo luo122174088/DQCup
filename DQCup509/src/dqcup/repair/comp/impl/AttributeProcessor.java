@@ -20,13 +20,14 @@ import dqcup.repair.ColumnNames;
 import dqcup.repair.RepairedCell;
 import dqcup.repair.attr.AttributeValidator;
 import dqcup.repair.attr.composite.impl.BirthAgeValidator;
-import dqcup.repair.attr.composite.impl.SalaryTaxValidator;
 import dqcup.repair.attr.composite.impl.StAddNumApmtValidator;
 import dqcup.repair.attr.impl.CityValidator;
 import dqcup.repair.attr.impl.FNameValidator;
 import dqcup.repair.attr.impl.MinitValidator;
 import dqcup.repair.attr.impl.SSNValidator;
+import dqcup.repair.attr.impl.SalaryValidator;
 import dqcup.repair.attr.impl.StateValidator;
+import dqcup.repair.attr.impl.TaxValidator;
 import dqcup.repair.attr.impl.ZipValidator;
 import dqcup.repair.comp.AttributeRepairer;
 import dqcup.repair.comp.DQCupContext;
@@ -59,19 +60,19 @@ public class AttributeProcessor implements DQCupProcessor {
 		// attrValidators.put(DQTuple.AGE_INDEX, new AgeValidator());
 
 		attrValidators.put(DQTuple.SSN_INDEX, new SSNValidator());
-		// attrValidators.put(DQTuple.SALARY_INDEX, new SalaryValidator());
-		// attrValidators.put(DQTuple.TAX_INDEX, new TaxValidator());
+		attrValidators.put(DQTuple.SALARY_INDEX, new SalaryValidator());
+		attrValidators.put(DQTuple.TAX_INDEX, new TaxValidator());
 
 		Arrays.fill(autoRepair, true);
+
 		autoRepair[DQTuple.SSN_INDEX] = false;
 
-		autoRepair[DQTuple.BIRTH_INDEX] = false;
-		autoRepair[DQTuple.AGE_INDEX] = false;
+		// autoRepair[DQTuple.BIRTH_INDEX] = false;
+		// autoRepair[DQTuple.AGE_INDEX] = false;
 
-		autoRepair[DQTuple.STADD_INDEX] = false;
-		autoRepair[DQTuple.STNUM_INDEX] = false;
-		autoRepair[DQTuple.APMT_INDEX] = false;
-
+		// autoRepair[DQTuple.STADD_INDEX] = false;
+		// autoRepair[DQTuple.STNUM_INDEX] = false;
+		// autoRepair[DQTuple.APMT_INDEX] = false;
 	}
 	private ColumnNames columnNames;
 	private HashSet<RepairedCell> repairs;
@@ -81,24 +82,25 @@ public class AttributeProcessor implements DQCupProcessor {
 	private Map<String, BitSet> invalidTuples;
 
 	private AttributeRepairer ssnRepairer;
-	private AttributeRepairer birthAgeRepairer;
-	private AttributeRepairer stAddNumApmtRepairer;
+	// private AttributeRepairer birthAgeRepairer;
+	// private AttributeRepairer stAddNumApmtRepairer;
 
 	private BirthAgeValidator birthAgeValidator;
 	private StAddNumApmtValidator stAddNumApmtValidator;
-	private SalaryTaxValidator salaryTaxValidator;
+
+	// private SalaryTaxValidator salaryTaxValidator;
 
 	private void init(DQCupContext context) {
 		repairs = context.getRepairs();
 		invalidTuples = new HashMap<String, BitSet>();
 		dqTuples = new HashMap<String, DQTuple>();
 		ssnRepairer = new SSNRepairer();
-		birthAgeRepairer = new BirthAgeRepairer();
-		stAddNumApmtRepairer = new StAddNumApmtRepairer();
+		// birthAgeRepairer = new BirthAgeRepairer();
+		// stAddNumApmtRepairer = new StAddNumApmtRepairer();
 
 		birthAgeValidator = new BirthAgeValidator();
 		stAddNumApmtValidator = new StAddNumApmtValidator();
-		salaryTaxValidator = new SalaryTaxValidator();
+		// salaryTaxValidator = new SalaryTaxValidator();
 	}
 
 	@Override
@@ -211,27 +213,6 @@ public class AttributeProcessor implements DQCupProcessor {
 		dqTuple.addSingleValue(DQTuple.BIRTH_INDEX, validBirth, birth);
 		dqTuple.addSingleValue(DQTuple.AGE_INDEX, validAge, age);
 
-		String salary = tuple[DQTuple.SALARY_INDEX + DQTuple.Offset];
-		String tax = tuple[DQTuple.TAX_INDEX + DQTuple.Offset];
-		String validSalary = salary;
-		String validTax = tax;
-		result = salaryTaxValidator.strictValidate(salary, tax);
-		if ((result & SalaryTaxValidator.Invalid_Conflict) != 0) {
-			validSalary = validTax = null;
-		} else {
-			if ((result & SalaryTaxValidator.Invalid_Salary) != 0) {
-				validSalary = null;
-			}
-			if ((result & SalaryTaxValidator.Invalid_Tax) != 0) {
-				validTax = null;
-			}
-		}
-		if (validSalary == null || validTax == null) {
-			valid = false;
-		}
-		dqTuple.addSingleValue(DQTuple.SALARY_INDEX, validSalary, salary);
-		dqTuple.addSingleValue(DQTuple.TAX_INDEX, validTax, tax);
-
 		if (!created) {
 			for (int i = 0; i < DQTuple.AttrCount; i++) {
 				if (!invalidAttr.get(i)
@@ -253,7 +234,6 @@ public class AttributeProcessor implements DQCupProcessor {
 
 	private void repair() {
 		Iterator<Entry<String, BitSet>> it = invalidTuples.entrySet().iterator();
-
 		while (it.hasNext()) {
 			Entry<String, BitSet> e = it.next();
 			String cuid = e.getKey();
@@ -262,13 +242,6 @@ public class AttributeProcessor implements DQCupProcessor {
 			List<Integer> ruids = tuple.getRuids();
 			if (invalidAttr.get(DQTuple.SSN_INDEX)) {
 				ssnRepairer.repair(tuple, repairs, invalidAttr);
-			}
-			if (invalidAttr.get(DQTuple.BIRTH_INDEX) || invalidAttr.get(DQTuple.AGE_INDEX)) {
-				birthAgeRepairer.repair(tuple, repairs, invalidAttr);
-			}
-			if (invalidAttr.get(DQTuple.STADD_INDEX) || invalidAttr.get(DQTuple.STNUM_INDEX)
-					|| invalidAttr.get(DQTuple.APMT_INDEX)) {
-				stAddNumApmtRepairer.repair(tuple, repairs, invalidAttr);
 			}
 			for (int i = 0; i < DQTuple.AttrCount; i++) {
 				if (invalidAttr.get(i) && autoRepair[i]) {

@@ -12,6 +12,7 @@ import dqcup.repair.attr.composite.impl.BirthAgeValidator;
 import dqcup.repair.comp.AttributeRepairer;
 import dqcup.repair.comp.DQTuple;
 
+@Deprecated
 public class BirthAgeRepairer implements AttributeRepairer {
 
 	private class BirthAge implements Comparable<BirthAge> {
