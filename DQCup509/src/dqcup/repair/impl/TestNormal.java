@@ -12,7 +12,7 @@ public class TestNormal {
 		AttributeProcessor processor = new AttributeProcessor();
 		HashSet<RepairedCell> repairs = new HashSet<RepairedCell>();
 
-		DQCupContext context = new DQCupContext("input/DB-normal.txt", repairs);
+		DQCupContext context = new DQCupContext("input/DB-test.txt", repairs);
 		processor.process(context);
 
 		for (RepairedCell cell : repairs) {

@@ -15,7 +15,7 @@ public class MinitValidator implements AttributeValidator {
 		if (value == null || value.length() == 0) {
 			return true;
 		}
-		if (value.length() > 1) {
+		if (value.length() != 1) {
 			return false;
 		}
 		return Character.isUpperCase(value.charAt(0));

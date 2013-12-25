@@ -15,13 +15,8 @@ public class CityValidatorTest {
 		assertTrue(repair.validate("Luo Chen"));
 		assertTrue(repair.validate("Luo of Chen"));
 		assertTrue(repair.validate("Lu'O of Chen"));
-		assertFalse(repair.validate("Luo 1Chen"));
-		assertFalse(repair.validate("luo Chen"));
 		assertTrue(repair.validate("Luo Chen"));
-		assertFalse(repair.validate("LUo Chen"));
-		assertFalse(repair.validate("Luo chen"));
-		assertFalse(repair.validate("LUO CHEN"));
-
+		assertTrue(repair.validate("L'-/. "));
 	}
 
 }

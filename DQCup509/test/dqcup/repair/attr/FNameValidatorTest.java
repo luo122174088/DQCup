@@ -14,6 +14,7 @@ public class FNameValidatorTest {
 		assertTrue(repair.validate("Luochen"));
 		assertTrue(repair.validate("Dept."));
 		assertTrue(repair.validate("Jodoinst.jean"));
+		assertTrue(repair.validate("Jodoinst,.jean"));
 		assertTrue(repair.validate("LUOCHEN"));
 		assertFalse(repair.validate("luochen"));
 		assertFalse(repair.validate("lu0chen"));

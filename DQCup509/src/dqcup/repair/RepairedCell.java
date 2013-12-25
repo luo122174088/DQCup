@@ -103,9 +103,10 @@ public class RepairedCell {
 	public String toString() {
 		StringBuilder str = new StringBuilder();
 		str.append(this.rowId);
-		str.append(" ");
+		str.append(',');
+
 		str.append(this.columnId);
-		str.append(" ");
+		str.append(',');
 		str.append(this.value);
 		return str.toString();
 	}

@@ -22,7 +22,7 @@ public class Compare {
 		reader.close();
 		System.err.println("wangyu has while luochen not:");
 		for (String s : wangyu) {
-			if (!luochen.contains(s)) {
+			if (!luochen.contains(s) && !s.contains("FNAME") && !s.contains("LNAME")) {
 				System.out.println(s);
 			}
 		}
@@ -34,7 +34,7 @@ public class Compare {
 
 		System.err.println("luochen has while wangyu not:");
 		for (String s : luochen) {
-			if (!wangyu.contains(s)) {
+			if (!wangyu.contains(s) && !s.contains("FNAME") && !s.contains("LNAME")) {
 				System.out.println(s);
 			}
 		}

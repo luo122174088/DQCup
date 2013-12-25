@@ -26,4 +26,15 @@ public class DatabaseRepairImpl implements DatabaseRepair {
 		return result;
 	}
 
+	public static void main(String[] args) {
+		int x = 10;
+		int y = 2;
+		x = x - y;
+		y = x + y;
+		x = y - x;
+		System.out.println(x);
+		System.out.println(y);
+
+	}
+
 }

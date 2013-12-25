@@ -5,6 +5,7 @@ import java.util.Set;
 
 import dqcup.repair.attr.AttributeValidator;
 
+//TODO
 public class StateValidator implements AttributeValidator {
 
 	public static Set<String> states = null;
@@ -14,9 +15,11 @@ public class StateValidator implements AttributeValidator {
 		states.add("AK");
 		states.add("AZ");
 		states.add("AR");
+
 		states.add("CA");
 		states.add("CO");
 		states.add("CT");
+
 		states.add("DE");
 		states.add("DC");
 		states.add("FL");
@@ -65,6 +68,8 @@ public class StateValidator implements AttributeValidator {
 		states.add("VI");
 		states.add("FM");
 		states.add("GU");
+		states.add("AS");
+		states.add("MP");
 	}
 
 	@Override

@@ -36,9 +36,16 @@ public class BirthAgeValidator {
 		}
 		try {
 			int iAge = Integer.valueOf(age);
-			if (year > 0 && iAge != 2013 - year) {
-				result |= Invalid_Age;
+			if ((result & Invalid_Birth) == 0) {
+				if (iAge != 2013 - year) {
+					result |= Invalid_Age;
+				}
+			} else {
+				if (iAge > 83 || iAge < 14) {
+					result |= Invalid_Age;
+				}
 			}
+
 		} catch (Exception e) {
 			result |= Invalid_Age;
 		}

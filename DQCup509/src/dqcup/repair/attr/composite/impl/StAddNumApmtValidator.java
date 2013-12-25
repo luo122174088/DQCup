@@ -7,7 +7,7 @@ package dqcup.repair.attr.composite.impl;
  */
 public class StAddNumApmtValidator {
 
-	private static final String POBox_Prefix = "PO Box";
+	public static final String POBox_Prefix = "PO Box ";
 
 	public static final int Invalid_StAdd = 0x1;
 
@@ -32,14 +32,14 @@ public class StAddNumApmtValidator {
 					}
 				}
 			}
-			if (!stNum.isEmpty() || !apmt.isEmpty()) {
-				result |= Invalid_StNum | Invalid_Apmt;
+			if (!stNum.isEmpty()) {
+				result = result | Invalid_StNum;
+			}
+			if (!apmt.isEmpty()) {
+				result = result | Invalid_Apmt;
 			}
 			return result;
 		} else {
-			if (stNum.isEmpty() && apmt.isEmpty()) {
-				return Invalid_StNum | Invalid_Apmt;
-			}
 			int len = stAdd.length();
 			// verify STADD
 			for (int i = 0; i < len; i++) {
@@ -52,14 +52,15 @@ public class StAddNumApmtValidator {
 			len = stNum.length();
 			if (len < 1 || len > 4) {
 				result |= Invalid_StNum;
-			}
-			for (int i = 0; i < len; i++) {
-				char c = stNum.charAt(i);
-				if (!Character.isDigit(c)) {
-					result |= Invalid_StNum;
-					break;
+			} else {
+				for (int i = 0; i < len; i++) {
+					if (!Character.isDigit(stNum.charAt(i))) {
+						result |= Invalid_StNum;
+						break;
+					}
 				}
 			}
+
 			len = apmt.length();
 			if (len != 3) {
 				result |= Invalid_Apmt;

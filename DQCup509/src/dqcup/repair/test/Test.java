@@ -51,7 +51,7 @@ public class Test {
 			avgFindAccuracy += findAccuracy;
 			avgRepairAccuracy += repairAccuracy;
 		}
-		
+
 		dr = new DatabaseRepairImpl();
 		truth = TestUtil.readTruth("input/Truth-hard.txt");
 		if (truth.size() != 0) {
@@ -68,9 +68,9 @@ public class Test {
 			avgFindAccuracy += findAccuracy;
 			avgRepairAccuracy += repairAccuracy;
 		}
-		
-		System.out.println("Total Time:"+totalTime);
-		System.out.println("Average Find Accuracy:"+avgFindAccuracy/3);
-		System.out.println("Average Repair Accuracy:"+avgRepairAccuracy/3);
+
+		System.out.println("Total Time:" + totalTime);
+		System.out.println("Average Find Accuracy:" + avgFindAccuracy / 3);
+		System.out.println("Average Repair Accuracy:" + avgRepairAccuracy / 3);
 	}
 }
